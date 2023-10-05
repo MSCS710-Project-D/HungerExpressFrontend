@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-const base_url = "http://localhost:8080"
+const base_url = "https://us-central1-maristhungerexpress.cloudfunctions.net/api"
 
 // Asynchronous thunk for logging in
 export const loginUserAsync = createAsyncThunk(
