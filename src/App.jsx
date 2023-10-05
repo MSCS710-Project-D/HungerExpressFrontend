@@ -16,7 +16,7 @@ import Header from "./components/Header";
 import ForgotPassword from "./components/ForgotPassword";
 
 function ProtectedRoute({ children }) {
-  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }

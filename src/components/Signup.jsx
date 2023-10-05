@@ -11,9 +11,11 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { signupUserAsync } from "../actions/auth";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "./Loader";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const loading = useSelector((state) => state.auth.loading);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,9 +27,15 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
 
-    dispatch(signupUserAsync({ email, password, firstName, lastName }));
+      const resp = dispatch(signupUserAsync({ email, password, firstName, lastName }));
+      console.log(resp);
+      navigate('/');
+    } catch (err) {
+      console.log(err)
+    }
   };
 
   return (

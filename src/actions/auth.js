@@ -1,15 +1,17 @@
 import axios from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
+const base_url = "http://localhost:8080"
+
 // Asynchronous thunk for logging in
 export const loginUserAsync = createAsyncThunk(
     'auth/loginUserAsync',
     async (credentials, thunkAPI) => {
         const { email, password } = credentials;
         try {
-            const response = await axios.post("https://your-api-endpoint/login", {
+            const response = await axios.post(`${base_url}/user/login`, {
                 email,
-                password: btoa(password)
+                password: password
             });
             return response.data;
         } catch (error) {
@@ -24,9 +26,9 @@ export const signupUserAsync = createAsyncThunk(
     async (credentials, thunkAPI) => {
         const { email, password, firstName, lastName } = credentials;
         try {
-            const response = await axios.post("https://your-api-endpoint/signup", {
+            const response = await axios.post(`${base_url}/user/create`, {
                 email,
-                password: btoa(password),
+                password: password,
                 firstName,
                 lastName
             });
@@ -42,7 +44,7 @@ export const forgotPasswordAsync = createAsyncThunk(
     'auth/forgotPasswordAsync',
     async (email, thunkAPI) => {
         try {
-            const response = await axios.post("https://your-api-endpoint/forgot-password", {
+            const response = await axios.post(`${base_url}/user/forgot-password`, {
                 email
             });
             return response.data;
