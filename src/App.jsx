@@ -16,6 +16,8 @@ import Header from "./components/Header";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 import { fetchUserLocation } from "./reducers/locationSlice"; 
+import Settings from './components/Settings'; 
+
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -49,6 +51,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/settings" element={<Settings />} />
 
           {/* <Route path='/order'
             element={

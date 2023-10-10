@@ -8,8 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../reducers/authSlice';
 import { updateUserAsync } from '../actions/auth';
 import { useSnackbar } from 'notistack';
-
-
+import { Link } from 'react-router-dom';
+import Settings from './Settings';
 
 
 const Header = () => {
@@ -21,6 +21,8 @@ const Header = () => {
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false); // State for Settings Dialog
+
 
   const [profileData, setProfileData] = useState({
     username: '',
@@ -46,6 +48,11 @@ const Header = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const handleSettingsClick = () => {
+    setIsSettingsDialogOpen(true);
+  };
+
 
   const handleUpdateClick = () => {
     // Fetch current values here and populate profileData
@@ -138,17 +145,19 @@ const Header = () => {
         </Box>
         
         <Box mx={2} display="flex" alignItems="center">
-            <TextField
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search..."
-              variant="outlined"
-              style={{ backgroundColor: 'white', width: '600px' }}  // Adjust the width value as needed
-            />
-            <Button color="primary" variant="contained" onClick={handleSearch}>
-              Search
-            </Button>
-          </Box>
+          <TextField
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search..."
+            variant="outlined"
+            style={{ backgroundColor: 'white', width: '600px' }}  // Adjust the width value as needed
+          />
+          <Button color="primary" variant="contained" onClick={handleSearch}>
+            Search
+          </Button>
+        </Box>
+
+
         <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
           <Button color="inherit" onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
           style={{ marginRight: '10px', border: '1px solid rgba(255, 255, 255, 0.5)', borderRadius: '4px' }}
@@ -182,7 +191,7 @@ const Header = () => {
           </Button>
           {isOpen && (
             <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
-              <li><Button onClick={() => {/* Handle Settings */}}>Settings</Button></li>
+              <li><Button onClick={handleSettingsClick}>Settings</Button></li>
               <li><Button onClick={handleUpdateClick}>Update</Button></li>
               <li>
                 <Button onClick={() => {
@@ -197,7 +206,7 @@ const Header = () => {
         </Box> 
       </Toolbar>
     </AppBar>
-
+    
     <Dialog open={isUpdateModalOpen} onClose={() => setIsUpdateModalOpen(false)}>
         <DialogTitle>Update Profile</DialogTitle>
         <DialogContent>
@@ -218,6 +227,17 @@ const Header = () => {
           </Button>
         </DialogContent>
     </Dialog>
+    <Dialog open={isSettingsDialogOpen} onClose={() => setIsSettingsDialogOpen(false)}>
+        <DialogTitle>Settings</DialogTitle>
+        <DialogContent>
+          <Settings />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsSettingsDialogOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     <Dialog open={isChangePasswordModalOpen} onClose={() => setIsChangePasswordModalOpen(false)}>
         <DialogTitle>Change Password</DialogTitle>
