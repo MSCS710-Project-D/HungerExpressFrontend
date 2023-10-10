@@ -9,6 +9,9 @@ import { logout } from '../reducers/authSlice';
 import { updateUserAsync } from '../actions/auth';
 import { useSnackbar } from 'notistack';
 
+
+
+
 const Header = () => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const dispatch = useDispatch();
@@ -17,6 +20,7 @@ const Header = () => {
   const currentUser = useSelector(state => state.user?.currentUser);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [profileData, setProfileData] = useState({
     username: '',
@@ -107,6 +111,21 @@ const Header = () => {
     };
   }, []);
 
+  const handleSearch = () => {
+    // Here, dispatch an action to your backend to search with the searchTerm
+    console.log("Searching for:", searchTerm);
+    fetch(`/search?q=${searchTerm}`)
+    .then(response => response.json())
+    .then(data => {
+      // Process and display the results
+      console.log(data);
+    })
+    .catch(error => {
+      console.error("Error fetching search results:", error);
+    });
+  };
+  
+
   return (
     <>
     <AppBar position="static">
@@ -118,6 +137,18 @@ const Header = () => {
           </Typography>
         </Box>
         
+        <Box mx={2} display="flex" alignItems="center">
+            <TextField
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search..."
+              variant="outlined"
+              style={{ backgroundColor: 'white', width: '600px' }}  // Adjust the width value as needed
+            />
+            <Button color="primary" variant="contained" onClick={handleSearch}>
+              Search
+            </Button>
+          </Box>
         <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
           <Button color="inherit" onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
           style={{ marginRight: '10px', border: '1px solid rgba(255, 255, 255, 0.5)', borderRadius: '4px' }}

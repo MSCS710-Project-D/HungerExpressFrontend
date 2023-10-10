@@ -27,7 +27,7 @@ const ImagePanel = () => {
 
     return (
         <div className="image-panel">
-            <img src={images[currentImageIndex]} alt="Rotating content" style={{ width: '100%', height: 'auto' }} />
+            <img src={images[currentImageIndex]} alt="Rotating content" style={{ width: '100%', height: '50%' }} />
         </div>
     );
 };
