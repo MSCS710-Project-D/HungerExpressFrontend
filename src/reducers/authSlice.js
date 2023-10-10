@@ -3,6 +3,7 @@ import {
   loginUserAsync,
   signupUserAsync,
   forgotPasswordAsync,
+  updateUserAsync
 } from "../actions/auth";
 
 const initialState = {
@@ -23,7 +24,7 @@ const authSlice = createSlice({
     },
     authSuccess: (state, action) => {
       state.token = action.payload.token || null;
-      state.user = action.payload.user || null;
+      state.user = action.payload || null;
       state.isAuthenticated = true;
       state.loading = false;
       state.error = null;
@@ -54,12 +55,26 @@ const authSlice = createSlice({
       })
       .addCase(loginUserAsync.fulfilled, (state, action) => {
         state.token = action.payload.token || null;
-        state.user = action.payload.user || null;
+        state.user = action.payload || null;
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;
       })
       .addCase(loginUserAsync.rejected, (state, action) => {
+        state.token = null;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateUserAsync.fulfilled, (state, action) => {
+        state.token = action.payload.token || null;
+        state.user = action.payload || null;
+        state.isAuthenticated = true;
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(updateUserAsync.rejected, (state, action) => {
         state.token = null;
         state.user = null;
         state.isAuthenticated = false;
@@ -72,7 +87,7 @@ const authSlice = createSlice({
       })
       .addCase(signupUserAsync.fulfilled, (state, action) => {
         state.token = action.payload.token || null;
-        state.user = action.payload.user || null;
+        state.user = action.payload || null;
         state.isAuthenticated = true;
         state.loading = false;
         state.error = null;

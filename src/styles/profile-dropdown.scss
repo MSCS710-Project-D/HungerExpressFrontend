@@ -14,11 +14,6 @@
   z-index: 1000;
 }
 
-/* Show the dropdown menu when the profile-dropdown is hovered */
-.profile-dropdown:hover .dropdown-menu {
-  display: block;
-}
-
 /* Style each dropdown item */
 .dropdown-menu li {
   padding: 12px 16px;
@@ -28,4 +23,8 @@
 /* Add a hover effect to dropdown items */
 .dropdown-menu li:hover {
   background-color: #ddd;
+}
+
+.dropdown-menu.show {
+  display: block;
 }

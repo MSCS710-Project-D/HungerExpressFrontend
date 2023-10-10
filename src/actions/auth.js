@@ -20,6 +20,18 @@ export const loginUserAsync = createAsyncThunk(
     }
 );
 
+export const updateUserAsync = createAsyncThunk(
+    'auth/updateUserAsync',
+    async (body, thunkAPI) => {
+        try {
+            const response = await axios.put(`${base_url}/user/update/${body.username}`, body);
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Error updating user.");
+        }
+    }
+);
+
 // For Signup
 export const signupUserAsync = createAsyncThunk(
     'auth/signupUserAsync',
@@ -44,12 +56,32 @@ export const forgotPasswordAsync = createAsyncThunk(
     'auth/forgotPasswordAsync',
     async (email, thunkAPI) => {
         try {
-            const response = await axios.post(`${base_url}/user/forgot-password`, {
+            const response = await axios.post(`${base_url}/user/reset-password`, {
                 email
             });
             return response.data;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response?.data?.message || "Error sending reset link.");
+        }
+    }
+);
+
+export const resetPasswordAsync = createAsyncThunk(
+    'auth/resetPasswordAsync',
+    async (body, thunkAPI) => {
+        const {password, email, token} = body;
+        try {
+            const response = await axios.post(`${base_url}/user/change-password`, {
+                password,
+                email
+            }, {
+                headers: {
+                    Authorization: `${token}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || "Error changing password.");
         }
     }
 );

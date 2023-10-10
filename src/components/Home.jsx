@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchRestaurants } from '../actions/restaurantActions';
 import RestaurantPane from './RestaurantPane';
+import ImagePanel from './ImagePanel';
 
 const Home = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -17,6 +18,10 @@ const Home = () => {
     return (
         <div>
             <h1>Home Page</h1>
+            
+            {/* Image Panel Component */}
+            <ImagePanel />
+
             <div className="restaurant-grid">
                 {restaurants.map(restaurant => (
                     <RestaurantPane key={restaurant.id} restaurant={restaurant} />
@@ -26,4 +31,4 @@ const Home = () => {
     );
 }
 
-export default Home
+export default Home;
