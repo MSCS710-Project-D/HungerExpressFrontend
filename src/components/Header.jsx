@@ -83,7 +83,7 @@ const Header = () => {
   };
 
   const [passwordData, setPasswordData] = useState({
-    username: user.username || '',
+    username: '',
     existingPassword: '',
     newPassword: '',
     confirmPassword: ''
