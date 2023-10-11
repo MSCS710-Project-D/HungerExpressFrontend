@@ -83,24 +83,41 @@ const Header = () => {
   };
 
   const [passwordData, setPasswordData] = useState({
-    //username: currentUser.username, // Pre-populate the username
-    username: currentUser?.username || '',
+    username: user.username || '',
     existingPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
   const [passwordError, setPasswordError] = useState('');
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New password and confirm password do not match!");
-      return;
+        setPasswordError("New password and confirm password do not match!");
+        return;
     }
-    // TODO: Implement the logic to change the password using the provided data
-    console.log(passwordData);
-    setPasswordError('Password changed successfully!');
-    setIsChangePasswordModalOpen(false);
-  };
+    
+    try {
+        const response = await fetch('/api/change-password', {  // Adjust the endpoint as needed
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(passwordData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setPasswordError('Password changed successfully!');
+            setIsChangePasswordModalOpen(false);
+        } else {
+            setPasswordError(data.message || 'Error changing password.');
+        }
+    } catch (error) {
+        setPasswordError('Error changing Password.');
+    }
+};
+
 
   const [isOrderFoodOpen, setIsOrderFoodOpen] = useState(false);
   const orderFoodRef = useRef(null);
