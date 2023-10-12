@@ -58,7 +58,7 @@ const Header = () => {
     // Fetch current values here and populate profileData
     // For demonstration purposes, I'm using dummy data
     setProfileData({
-      username: user.username,
+      username: user?.username,
       email: user.email,
       first_name: user.first_name,
       last_name: user.last_name,
@@ -83,7 +83,7 @@ const Header = () => {
   };
 
   const [passwordData, setPasswordData] = useState({
-    username: '',
+    username: user?.username,
     existingPassword: '',
     newPassword: '',
     confirmPassword: ''
