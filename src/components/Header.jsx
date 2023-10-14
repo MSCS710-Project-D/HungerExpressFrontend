@@ -168,6 +168,12 @@ const Header = () => {
     newPassword: '',
     confirmPassword: '',
   });
+  useEffect(() => {
+    setPasswordData(prevState => ({
+        ...prevState,
+        username: user?.username
+    }));
+  }, [user?.username]);
   const [passwordError, setPasswordError] = useState('');
 
   const handlePasswordChange = async () => {
