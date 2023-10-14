@@ -177,23 +177,27 @@ const Header = () => {
     }
 
     try {
-      const response = await fetch('/api/change-password', {
+      const response = await fetch('https://us-central1-maristhungerexpress.cloudfunctions.net/api/user/change-password', {
         // Adjust the endpoint as needed
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(passwordData),
+        body: JSON.stringify({
+          password: passwordData.newPassword,
+          existingPassword: passwordData.existingPassword,
+          username: passwordData.username
+        }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setPasswordError('Password changed successfully!');
-        setIsChangePasswordModalOpen(false);
-      } else {
-        setPasswordError(data.message || 'Error changing password.');
-      }
+      setPasswordError('');
+      setIsChangePasswordModalOpen(false);
+      setPasswordData({
+        username: user?.username,
+        existingPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      })
     } catch (error) {
       setPasswordError('Error changing Password.');
     }

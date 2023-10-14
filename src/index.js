@@ -8,6 +8,8 @@ import { store, persistor } from './store';
 import reportWebVitals from './reportWebVitals';
 import { SnackbarProvider } from 'notistack';
 
+
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
