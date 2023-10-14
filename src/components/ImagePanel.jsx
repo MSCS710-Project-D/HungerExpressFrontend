@@ -26,13 +26,14 @@ const ImagePanel = () => {
     }, []);
 
     return (
-        <div className="image-panel" style={{ width: '50%', height: '100%', float: 'left' }}>
+        <div className="image-panel" style={{ width: '100%', height: '50vh', float: 'left' }}>
             <img
                 src={images[currentImageIndex]}
                 alt="Rotating content"
                 style={{
                     width: '100%',
                     height: '100%',
+                    objectFit: 'cover', // This ensures the image covers the div without stretching
                 }}
             />
         </div>

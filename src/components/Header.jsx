@@ -23,6 +23,20 @@ const Header = () => {
   const user = useSelector((state) => state.auth.user);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false); // State for Settings Dialog
+  const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
+  const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
+  const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
+
+  const [restaurantData, setRestaurantData] = useState({
+    _id: '',
+    name: '',
+    description: '',
+    address: '',
+    phone_number: '',
+    owner_id: '',
+    category_id: '',
+    restaurantImg: '',
+  });
 
   const [profileData, setProfileData] = useState({
     username: '',
@@ -34,7 +48,68 @@ const Header = () => {
   });
 
   const dropdownRef = useRef(null);
+  const restaurantDropdownRef = useRef(null);
+  const profileDropdownRef = useRef(null);
 
+  useEffect(() => {
+    const handleClickOutsideRestaurant = (event) => {
+      if (restaurantDropdownRef.current && !restaurantDropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleClickOutsideProfile = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false); // <-- New state for Profile dropdown
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutsideRestaurant);
+    document.addEventListener('mousedown', handleClickOutsideProfile);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideRestaurant);
+      document.removeEventListener('mousedown', handleClickOutsideProfile);
+    };
+  }, []);
+  const handleOpenRestaurantModal = (action) => {
+    setRestaurantAction(action);
+    if (action === 'add') {
+      setRestaurantData({
+        _id: '',
+        name: '',
+        description: '',
+        address: '',
+        phone_number: '',
+        owner_id: '',
+        category_id: '',
+        restaurantImg: '',
+      });
+    }
+    setIsRestaurantModalOpen(true);
+  };
+
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false); // <-- New state for Profile dropdown
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setRestaurantImage(file);
+    }
+  };
+
+  const handleAddRestaurant = async () => {
+    // Logic to add restaurant to the database
+    // For example, make an API call to your backend to add the restaurant
+  };
+
+  const handleModifyRestaurant = async () => {
+    // Logic to modify restaurant in the database using restaurant name or id
+  };
+
+  const handleDeleteRestaurant = async () => {
+    // Logic to delete restaurant from the database using restaurant name or id
+  };
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -234,6 +309,31 @@ const Header = () => {
           >
             My Orders
           </Button>
+          <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
+              <Button
+                color="inherit"
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  borderRadius: '4px',
+                }}
+              >
+                Restaurants {isOpen ? '▲' : '▼'}
+              </Button>
+              {isOpen && (
+                <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
+                  <li>
+                    <Button onClick={() => handleOpenRestaurantModal('add')}>Add Restaurant</Button>
+                  </li>
+                  <li>
+                    <Button onClick={() => handleOpenRestaurantModal('modify')}>Modify Restaurant</Button>
+                  </li>
+                  <li>
+                    <Button onClick={() => handleOpenRestaurantModal('delete')}>Delete Restaurant</Button>
+                  </li>
+                </ul>
+              )}
+            </Box>
 
           <Button
             color="inherit"
@@ -246,19 +346,19 @@ const Header = () => {
           >
             Change Password
           </Button>
-          <Box className="profile-dropdown" ref={dropdownRef}>
+          <Box className="profile-dropdown" ref={profileDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
             <Button
               color="inherit"
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               style={{
                 border: '1px solid rgba(255, 255, 255, 0.5)',
                 borderRadius: '4px',
               }}
             >
-              Profile {isOpen ? '▲' : '▼'}
+              Profile {isProfileDropdownOpen ? '▲' : '▼'}
             </Button>
-            {isOpen && (
-              <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
+            {isProfileDropdownOpen && (
+              <ul className={`dropdown-menu ${isProfileDropdownOpen ? 'show' : ''}`}>
                 <li>
                   <Button onClick={handleSettingsClick}>Settings</Button>
                 </li>
@@ -268,7 +368,7 @@ const Header = () => {
                 <li>
                   <Button
                     onClick={() => {
-                      setIsOpen(false); // Close the dropdown
+                      setIsProfileDropdownOpen(false); // Close the dropdown
                       dispatch(logout()); // Dispatch the logout action
                     }}
                   >
@@ -281,6 +381,83 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
+      <Dialog open={isRestaurantModalOpen} onClose={() => setIsRestaurantModalOpen(false)}>
+      
+        <DialogTitle>
+          {restaurantAction === 'add' && 'Add Restaurant'}
+          {restaurantAction === 'modify' && 'Modify Restaurant'}
+          {restaurantAction === 'delete' && 'Delete Restaurant'}
+        </DialogTitle>
+        <DialogContent>
+          {/* Always show ID and Name fields */}
+          <TextField
+            label="ID"
+            variant="outlined"
+            value={restaurantData._id}
+            onChange={(e) => setRestaurantData((prev) => ({ ...prev, _id: e.target.value }))}
+            style={{ marginBottom: '10px', width: '100%' }}
+          />
+          <TextField
+            label="Name"
+            variant="outlined"
+            value={restaurantData.name}
+            onChange={(e) => setRestaurantData((prev) => ({ ...prev, name: e.target.value }))}
+            style={{ marginBottom: '10px', width: '100%' }}
+          />
+
+          {/* Only show these fields for 'Add Restaurant' action */}
+          {restaurantAction === 'add' && (
+            <>
+              <TextField
+                label="Description"
+                variant="outlined"
+                value={restaurantData.description}
+                onChange={(e) => setRestaurantData((prev) => ({ ...prev, description: e.target.value }))}
+                style={{ marginBottom: '10px', width: '100%' }}
+              />
+              <TextField
+                label="Address"
+                variant="outlined"
+                value={restaurantData.address}
+                onChange={(e) => setRestaurantData((prev) => ({ ...prev, address: e.target.value }))}
+                style={{ marginBottom: '10px', width: '100%' }}
+              />
+              <TextField
+                label="Phone Number"
+                variant="outlined"
+                value={restaurantData.phone_number}
+                onChange={(e) => setRestaurantData((prev) => ({ ...prev, phone_number: e.target.value }))}
+                style={{ marginBottom: '10px', width: '100%' }}
+              />
+              {/* Add the file input for uploading an image */}
+              <input
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setRestaurantData((prev) => ({ ...prev, restaurantImg: reader.result }));
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                style={{ marginBottom: '10px', width: '100%' }}
+              />
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsRestaurantModalOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleOpenRestaurantModal} color="primary">
+            {restaurantAction === 'add' && 'Add'}
+            {restaurantAction === 'modify' && 'Modify'}
+            {restaurantAction === 'delete' && 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog open={isUpdateModalOpen} onClose={() => setIsUpdateModalOpen(false)}>
         <DialogTitle>Update Profile</DialogTitle>
         <DialogContent>
