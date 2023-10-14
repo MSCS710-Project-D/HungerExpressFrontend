@@ -27,15 +27,29 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
+    if (!isValidEmail(email)) {
+      setError("Invalid email format");
+      return;
+    }
     try {
       e.preventDefault();
-
       const resp = dispatch(signupUserAsync({ email, password, firstName, lastName }));
       console.log(resp);
       navigate('/');
     } catch (err) {
-      console.log(err)
+      console.log(err);
+      setError("Signup failed. Please try again.");
     }
+  };
+
+  const handleLoginRedirect = () => {
+    navigate('/login'); // Assuming your login route is '/login'
+  };
+
+
+  const isValidEmail = (email) => {
+    // Basic email validation: check for "@" and a valid domain suffix
+    return /\S+@\S+\.\S+/.test(email);
   };
 
   return (
@@ -151,12 +165,21 @@ const Signup = () => {
             >
               Signup
             </Button>
-          </form>
+            </form>
           {error && (
             <Typography variant="body2" color="error" align="center" mt={2}>
               {error}
             </Typography>
           )}
+          <Typography 
+            variant="body2" 
+            align="center" 
+            mt={2} 
+            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+            onClick={handleLoginRedirect}
+          >
+            Back to Login
+          </Typography>
         </Box>
       </Box>
     </>
