@@ -8,7 +8,6 @@ const Home = () => {
     const [restaurants, setRestaurants] = useState([]);
     const [selectedRestaurant, setSelectedRestaurant] = useState(null); // Define selectedRestaurant state
 
-
     useEffect(() => {
         const loadRestaurants = async () => {
             const data = await fetchRestaurants();
@@ -25,13 +24,16 @@ const Home = () => {
 
             <div className="restaurant-grid">
                 {restaurants.map(restaurant => (
-                    <RestaurantPane key={restaurant.id} restaurant={restaurant}     setSelectedRestaurant={setSelectedRestaurant}
+                    <RestaurantPane
+                        key={restaurant.id}
+                        restaurant={restaurant}
+                        setSelectedRestaurant={setSelectedRestaurant}
                     />
                 ))}
             </div>
-              {/* Include the MenuItems component */}
-              {/* {selectedRestaurant && <MenuItems restaurant={selectedRestaurant} />} */}
 
+            {/* Include the MenuItems component */}
+            {selectedRestaurant && <MenuItems restaurant={selectedRestaurant} />}
         </div>
     );
 }

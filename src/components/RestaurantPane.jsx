@@ -4,6 +4,8 @@ import '../styles/restaurants.scss';
 const RestaurantPane = ({ restaurant }) => {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [menuItems, setMenuItems] = useState([]);
+    const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+
 
     useEffect(() => {
         if (isMenuVisible) {
@@ -16,7 +18,7 @@ const RestaurantPane = ({ restaurant }) => {
 
     return (
         <div className="restaurant-pane" onClick={() => setIsMenuVisible(true)}>
-            <img src={restaurant.imageURL} alt={restaurant.name} className="restaurant-image" />
+            <img src={`/restaurant-images/${restaurant.imageURL}`} alt={restaurant.name} className="restaurant-images" />
             <div className="restaurant-name">{restaurant.name}</div>
             <div className="restaurant-description">{restaurant.description}</div>
             <div className="restaurant-details">
