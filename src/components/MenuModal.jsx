@@ -68,7 +68,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
 
     const fetchAllMenuItemsForRestaurant = async (restaurantId) => {
         try {
-            const response = await axios.get(`/menuItems/restaurant/${restaurantId}`);
+            const response = await axios.get(`${BASE_URL}/menuItems/restaurant/${restaurantId}`);
             console.log(response.data);
             setLocalMenuItems(response.data); // Update the local state with the fetched menu items
         } catch (error) {
