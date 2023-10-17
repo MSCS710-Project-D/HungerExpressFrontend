@@ -27,6 +27,7 @@ const Header = () => {
   const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
 
+
   const [restaurantData, setRestaurantData] = useState({
     _id: '',
     name: '',
