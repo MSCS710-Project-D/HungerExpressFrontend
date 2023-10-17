@@ -146,7 +146,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                 <button className="search-id-button" onClick={() => fetchMenuItemById(searchId)}>Search by ID</button>
                 <h2>Menu Items for {restaurant.name}</h2>
                 <div className="menu-item-list">
-                    {localMenuItems.map(item => (
+                    {localMenuItems?.map (item => (
                         <div key={item._id} className="menu-item-details">
                             <div className="quantity-control">
                                 <button onClick={() => updateQuantity(item._id, -1)}>-</button>
