@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import LoadingSpinner from './LoadingSpinner';
+
 
 const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const [quantities, setQuantities] = useState({});
     const [isAddMenuItemDialogOpen, setIsAddMenuItemDialogOpen] = useState(false);
     const [searchId, setSearchId] = useState(''); // For searching by ID
     const [localMenuItems, setLocalMenuItems] = useState(menuItems);
+    const [isLoading, setIsLoading] = useState(false);
 
     // State for the new menu item form
     const [newMenuItem, setNewMenuItem] = useState({
@@ -31,12 +36,14 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setIsLoading(true); // Show loading spinner
             const reader = new FileReader();
             reader.onloadend = () => {
-                setNewMenuItem(prevState => ({
+                setNewMenuItem((prevState) => ({
                     ...prevState,
-                    image_url: reader.result
+                    image_url: reader.result,
                 }));
+                setIsLoading(false); // Hide loading spinner when image is loaded
             };
             reader.readAsDataURL(file);
         }
@@ -61,6 +68,10 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
             const response = await axios.post(`${BASE_URL}/menuItems/create`, payload);
             console.log(response.data);
             fetchAllMenuItemsForRestaurant(restaurant._id); // Refresh the menu items after saving
+            // Show a success notification using react-toastify
+            toast.success('Menu item saved successfully!', {
+        autoClose: 2000, // Close the notification after 2 seconds
+    });
         } catch (error) {
             console.error("Error creating menu item:", error);
         }
@@ -123,6 +134,10 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
             const response = await axios.put(`${BASE_URL}/menuItems/update/${menuItemId}`, updatedData);
             console.log(response.data);
             // Refresh your menu items or handle the response as needed
+            // Show a success notification using react-toastify
+            toast.success('Menu item saved successfully!', {
+            autoClose: 2000, // Close the notification after 2 seconds
+    });
         } catch (error) {
             console.error("Error updating menu item:", error);
         }
@@ -142,6 +157,9 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
             console.log(response.data);
             // Update local state by filtering out the deleted item
             setLocalMenuItems(prevItems => prevItems.filter(item => item._id !== menuItemId));
+            toast.success('Menu item deleted successfully!', {
+                autoClose: 2000, // Close the notification after 2 seconds
+            });
         } catch (error) {
             console.error("Error deleting menu item:", error);
         }
@@ -173,6 +191,13 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                 <div className="menu-item-list">
                     {localMenuItems?.map (item => (
                         <div key={item._id} className="menu-item-details">
+                            <div className="menu-item-image">
+                                <img
+                                    src={item.image_url}
+                                    alt={item.name}
+                                    className="menu-item-image"
+                                />
+                            </div>
                             <div className="quantity-control">
                                 <button onClick={() => updateQuantity(item._id, -1)}>-</button>
                                 <span>{quantities[item._id] || 0}</span>
@@ -198,6 +223,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
             {isAddMenuItemDialogOpen && (
                 <div className="add-menu-item-overlay">
                     <div className="add-menu-item-dialog">
+                    {isLoading && <LoadingSpinner />} 
                         <h3>Add New Menu Item</h3>
                         <label>
                             Restaurant ID:

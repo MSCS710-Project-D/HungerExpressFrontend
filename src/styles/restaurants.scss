@@ -204,6 +204,12 @@
     overflow-y: auto;
 }
 
+.menu-item-image img {
+    max-width: 100%; /* Set the maximum width of the image to fit its container */
+    max-height: 150px; /* Set the maximum height of the image to your desired size */
+    display: block; /* Ensure the image behaves as a block element */
+    margin: 0 auto; /* Center the image horizontally */
+}
 
 .menu-item-details {
     display: flex;
