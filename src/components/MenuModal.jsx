@@ -28,6 +28,20 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         setIsAddMenuItemDialogOpen(true);
     };
 
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewMenuItem(prevState => ({
+                    ...prevState,
+                    image_url: reader.result
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleCloseAddMenuItemDialog = () => {const deleteMenuItem = async (menuItemId) => {
         try {
             const response = await axios.delete(`${BASE_URL}/menuItems/delete/${menuItemId}`);
@@ -42,16 +56,16 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         setIsAddMenuItemDialogOpen(false);
     };
 
-    const handleSaveMenuItem = async (newMenuItem) => {
+    const handleSaveMenuItem = async (payload) => {
         try {
-            const response = await axios.post(`${BASE_URL}/menuItems/create`, newMenuItem);
+            const response = await axios.post(`${BASE_URL}/menuItems/create`, payload);
             console.log(response.data);
             fetchAllMenuItemsForRestaurant(restaurant._id); // Refresh the menu items after saving
         } catch (error) {
             console.error("Error creating menu item:", error);
         }
     };
-
+    
     useEffect(() => {
         fetchAllMenuItemsForRestaurant(restaurant._id);
     }, [restaurant]);
@@ -84,15 +98,25 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     };
 
     const handleSubmitMenuItem = () => {
+        const payload = {
+            restaurant_id: newMenuItem.restaurant_id,
+            name: newMenuItem.name,
+            description: newMenuItem.description,
+            price: parseFloat(newMenuItem.price).toFixed(2), // Ensure price is a float
+            availability: newMenuItem.availability,
+            image_url: newMenuItem.image_url
+        };
+    
         if (newMenuItem._id) {
             // If the newMenuItem has an _id, it means it's an existing item and we're editing it
-            editMenuItem(newMenuItem._id, newMenuItem);
+            editMenuItem(newMenuItem._id, payload);
         } else {
             // Otherwise, it's a new item and we're creating it
-            handleSaveMenuItem(newMenuItem);
+            handleSaveMenuItem(payload);
         }
         handleCloseAddMenuItemDialog();
     };
+    
 
     const editMenuItem = async (menuItemId, updatedData) => {
         try {
@@ -132,6 +156,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         alert(`${itemName} added to cart!`);
     };
 
+    
     return (
         <div className="menu-modal-overlay">
             <div className="menu-modal">
@@ -175,9 +200,9 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                     <div className="add-menu-item-dialog">
                         <h3>Add New Menu Item</h3>
                         <label>
-                        Restaurant ID:
-                        <input type="text" name="restaurant_id" value={newMenuItem.restaurant_id} disabled /> {/* Display the restaurant_id as a disabled input field */}
-                         </label>
+                            Restaurant ID:
+                            <input type="text" name="restaurant_id" value={newMenuItem.restaurant_id} readOnly />
+                        </label>
                         <label>
                             Name:
                             <input type="text" name="name" value={newMenuItem.name} onChange={handleInputChange} />
@@ -192,20 +217,34 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                         </label>
                         <label>
                             Availability:
-                            <input type="text" name="availability" value={newMenuItem.availability} onChange={handleInputChange} />
+                            <select name="availability" value={newMenuItem.availability} onChange={handleInputChange}>
+                                <option value="">Select Availability</option>
+                                <option value="In stock">In stock</option>
+                                <option value="Out of stock">Out of stock</option>
+                                {/* Add more options as needed */}
+                            </select>
                         </label>
                         <label>
                             Image URL:
-                            <input type="text" name="image_url" value={newMenuItem.image_url} onChange={handleInputChange} />
+                            <input 
+                                type="text" 
+                                name="image_url" 
+                                value={newMenuItem.image_url || ''} // Ensure it falls back to an empty string if undefined
+                                onChange={handleInputChange} 
+                            />
                         </label>
+
                         <label>
-                            Allergy Info (comma-separated):
-                            <input type="text" name="allergy_info" value={newMenuItem.allergy_info.join(', ')} onChange={(e) => setNewMenuItem(prevState => ({ ...prevState, allergy_info: e.target.value.split(', ').map(item => item.trim()) }))} />
+                            Or Upload Image:
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                name="uploaded_image" 
+                                onChange={handleImageUpload} 
+                            />
                         </label>
-                        <label>
-                            Calories:
-                            <input type="text" name="calories" value={newMenuItem.calories} onChange={handleInputChange} />
-                        </label>
+
+
                         <button onClick={handleSubmitMenuItem}>Save</button>
                         <button onClick={handleCloseAddMenuItemDialog}>Close</button>
                     </div>

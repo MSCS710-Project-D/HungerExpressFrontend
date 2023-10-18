@@ -32,7 +32,7 @@ const Home = () => {
     return (
         <div>
             <ImagePanel />
-            <div style={{display: 'flex', flexWrap: 'wrap', gap: '24px'}} className="restaurant-grid">
+            <div style={{display: 'flex', flexWrap: 'wrap', gap: '55px'}} className="restaurant-grid">
                 {restaurants.map(restaurant => (
                     <RestaurantPane 
                         key={restaurant._id} 

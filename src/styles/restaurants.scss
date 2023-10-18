@@ -7,6 +7,41 @@
     width: 100%;
 }
 
+.menu-modal {
+    // ... (existing styles)
+
+    h3 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px; // Increase the font size for better visibility
+        color: #333;    // Darker color for better contrast
+    }
+
+    label {
+        display: block;
+        margin-bottom: 20px; // Increase margin for better spacing
+
+        input {
+            display: block;
+            width: 80%; // Reduce the width to 80% to prevent overlap
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+    }
+}
+
+.edit-button {
+    margin-right: 10px;
+}
+
+.delete-button {
+    margin-left: 10px; 
+}
+
+
 .restaurant-pane {
     border: 1px solid #ccc;
     padding: 20px;
@@ -106,6 +141,13 @@
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     position: relative;
+
+    h3 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px; // Increase the font size for better visibility
+        color: #333;    // Darker color for better contrast
+    }
 
     button.close-button {
         position: absolute;
@@ -254,31 +296,33 @@
 }
 
 .add-menu-item-dialog {
-    width: 300px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     background-color: #fff;
+    padding: 20px;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
 
     h3 {
         text-align: center;
         margin-bottom: 20px;
+        font-size: 24px; // Increase the font size for better visibility
+        color: #333;    // Darker color for better contrast
     }
 
     label {
         display: block;
-        margin-bottom: 15px;
+        margin-bottom: 20px; // Increase margin for better spacing
 
         input {
             display: block;
-            width: 90%; // Reduce the width to 90%
+            width: 80%; // Reduce the width to 80% to match the edit modal
             padding: 10px;
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; // Ensure padding and border are included in the width
+            box-sizing: border-box; 
         }
     }
 
@@ -326,6 +370,7 @@
     font-size: 14px;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-right: 10px; // Add some margin to separate it from the delete button
 }
 
 .edit-button:hover {
@@ -342,6 +387,7 @@
     font-size: 14px;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-left: 10px; // Add some margin to separate it from the edit button
 }
 
 .delete-button:hover {

@@ -1,9 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/restaurants.scss';
+import { updateRestaurant, deleteRestaurant } from '../actions/restaurantActions';
 
 const BASE_URL = "https://us-central1-maristhungerexpress.cloudfunctions.net/api/";
 
 const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
+    const [isModalOpen, setModalOpen] = useState(false);
+    const [editableRestaurant, setEditableRestaurant] = useState(null);
+
+    const handleEditClick = (restaurant) => {
+        setEditableRestaurant(restaurant);
+        setModalOpen(true);
+    };
+
+    const handleSaveClick = async () => {
+        try {
+            await updateRestaurant(editableRestaurant);
+            alert('Restaurant updated successfully!');
+            setModalOpen(false);
+        } catch (error) {
+            alert('Error updating restaurant. Please try again.');
+        }
+    };
+
+    const handleDeleteClick = async (restaurantId) => {
+        try {
+            await deleteRestaurant(restaurantId);
+            alert('Restaurant deleted successfully!');
+        } catch (error) {
+            alert('Error deleting restaurant. Please try again.');
+        }
+    };
+
     return (
         <div className="restaurant-pane" style={{width: '350px'}}>
             <div onClick={() => onRestaurantClick(restaurant._id)}>
@@ -21,6 +49,35 @@ const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
                     </div>
                 </div>
             </div>
+            <div className="restaurant-actions">
+                <button className="edit-button" onClick={() => handleEditClick(restaurant)}>Edit</button>
+                <button className="delete-button" onClick={() => handleDeleteClick(restaurant._id)}>Delete</button>
+            </div>
+            {isModalOpen && (
+                <div className="menu-modal-overlay">
+                    <div className="menu-modal">
+                        <button className="close-button" onClick={() => setModalOpen(false)}>X</button>
+                        <h3>Edit Restaurant</h3>
+                        <label>
+                            Name:
+                            <input type="text" value={editableRestaurant.name} onChange={(e) => setEditableRestaurant({...editableRestaurant, name: e.target.value})} />
+                        </label>
+                        <label>
+                            Description:
+                            <input type="text" value={editableRestaurant.description} onChange={(e) => setEditableRestaurant({...editableRestaurant, description: e.target.value})} />
+                        </label>
+                        <label>
+                            Address:
+                            <input type="text" value={editableRestaurant.address} onChange={(e) => setEditableRestaurant({...editableRestaurant, address: e.target.value})} />
+                        </label>
+                        <label>
+                            Phone Number:
+                            <input type="text" value={editableRestaurant.phone_number} onChange={(e) => setEditableRestaurant({...editableRestaurant, phone_number: e.target.value})} />
+                        </label>
+                        <button className="submit" onClick={handleSaveClick}>Save</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
