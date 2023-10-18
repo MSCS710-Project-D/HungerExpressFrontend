@@ -18,14 +18,14 @@ const ImagePanel = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-        }, 10000); // Change image every 10 seconds
+        }, 5000); // Change image every 10 seconds
 
         // Cleanup the interval on component unmount
         return () => clearInterval(timer);
     }, []);
 
     return (
-        <div className="image-panel" style={{ width: '100%', height: '50vh' }}>
+        <div className="image-panel" style={{ width: '100%', height: '70vh' }}>
             <img
                 src={images[currentImageIndex]}
                 alt="Rotating content"
