@@ -342,7 +342,7 @@ const Header = () => {
       <Toolbar style={{ background: 'linear-gradient(to right, #ff8a00, #ec4e20)' }} className="header">
         
         <Box display="flex" alignItems="center" flexGrow={1}>
-            <img src="/logo.png" alt="Logo" style={{ width: '50px', marginRight: '15px' }} />
+        <img src="/logo.png" alt="Logo" style={{ width: '70px', height: '70px', marginRight: '15px' }} />
             <Typography variant="h6" style={{ fontFamily: 'Roboto', fontSize: '24px', color: '#333' }}>
               Hunger Express
             </Typography>
