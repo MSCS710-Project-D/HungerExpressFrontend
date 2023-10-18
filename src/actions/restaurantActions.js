@@ -11,3 +11,33 @@ export const fetchRestaurants = async () => {
         return [];
     }
 };
+
+export const addRestaurant = async (restaurant) => {
+    try {
+        const response = await axios.post(`${base_url}/restaurant/create`, restaurant);
+        return response.data;
+    } catch (error) {
+        console.error("Error adding restaurant:", error);
+        return [];
+    }
+}
+
+export const updateRestaurant = async (restaurant) => {
+    try {
+        const response = await axios.put(`${base_url}/restaurant/update/${restaurant._id}`, restaurant);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating restaurant:", error);
+        return [];
+    }
+}
+
+export const deleteRestaurant = async (restaurantId) => {
+    try {
+        const response = await axios.delete(`${base_url}/restaurant/delete/${restaurantId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting restaurant:", error);
+        return [];
+    }
+}

@@ -6,6 +6,7 @@ import { Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } 
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../reducers/authSlice';
 import { updateUserAsync } from '../actions/auth';
+import { fetchRestaurants, addRestaurant, updateRestaurant, deleteRestaurant } from '../actions/restaurantActions';
 import { useSnackbar } from 'notistack';
 import { Link } from 'react-router-dom';
 import Settings from './Settings';
@@ -26,7 +27,6 @@ const Header = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
-
 
   const [restaurantData, setRestaurantData] = useState({
     _id: '',
@@ -99,17 +99,71 @@ const Header = () => {
   };
 
   const handleAddRestaurant = async () => {
-    // Logic to add restaurant to the database
-    // For example, make an API call to your backend to add the restaurant
+    try {
+      const response = await dispatch(addRestaurant(restaurantData));
+      setIsRestaurantModalOpen(false);
+      setRestaurantData({
+        _id: '',
+        name: '',
+        description: '',
+        address: '',
+        phone_number: '',
+        owner_id: '',
+        category_id: '',
+        restaurantImg: '',
+      });
+    } catch (error) {
+      console.error("Error adding restaurant:", error);
+    }
   };
 
   const handleModifyRestaurant = async () => {
-    // Logic to modify restaurant in the database using restaurant name or id
+    try {
+      const response = await dispatch(updateRestaurant(restaurantData));
+      setIsRestaurantModalOpen(false);
+      setRestaurantData({
+        _id: '',
+        name: '',
+        description: '',
+        address: '',
+        phone_number: '',
+        owner_id: '',
+        category_id: '',
+        restaurantImg: '',
+      });
+    } catch (error) {
+      console.error("Error modifying restaurant:", error);
+    }
   };
 
   const handleDeleteRestaurant = async () => {
-    // Logic to delete restaurant from the database using restaurant name or id
+    try {
+      const response = await dispatch(deleteRestaurant(restaurantData._id));
+      setIsRestaurantModalOpen(false);
+      setRestaurantData({
+        _id: '',
+        name: '',
+        description: '',
+        address: '',
+        phone_number: '',
+        owner_id: '',
+        category_id: '',
+        restaurantImg: '',
+      });
+    } catch (error) {
+      console.error("Error deleting restaurant:", error);
+    }
   };
+
+  const handleRestaurantActions = (action) => {
+    if (restaurantAction === 'add') {
+      handleAddRestaurant();
+    } else if (restaurantAction === 'modify') {
+      handleModifyRestaurant();
+    } else if (restaurantAction === 'delete') {
+      handleDeleteRestaurant();
+    }
+  }
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -169,12 +223,6 @@ const Header = () => {
     newPassword: '',
     confirmPassword: '',
   });
-  useEffect(() => {
-    setPasswordData(prevState => ({
-        ...prevState,
-        username: user?.username
-    }));
-  }, [user?.username]);
   const [passwordError, setPasswordError] = useState('');
 
   const handlePasswordChange = async () => {
@@ -462,7 +510,7 @@ const Header = () => {
           <Button onClick={() => setIsRestaurantModalOpen(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleOpenRestaurantModal} color="primary">
+          <Button onClick={handleRestaurantActions} color="primary">
             {restaurantAction === 'add' && 'Add'}
             {restaurantAction === 'modify' && 'Modify'}
             {restaurantAction === 'delete' && 'Delete'}

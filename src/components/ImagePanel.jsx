@@ -26,7 +26,7 @@ const ImagePanel = () => {
     }, []);
 
     return (
-        <div className="image-panel" style={{ width: '100%', height: '50vh', float: 'left' }}>
+        <div className="image-panel" style={{ width: '100%', height: '50vh' }}>
             <img
                 src={images[currentImageIndex]}
                 alt="Rotating content"
