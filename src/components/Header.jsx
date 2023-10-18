@@ -11,6 +11,7 @@ import { useSnackbar } from 'notistack';
 import { Link } from 'react-router-dom';
 import Settings from './Settings';
 import Typography from '@mui/material/Typography'; // Keep this single import for Typography
+import '../styles/Header.scss'; // Adjust the file path to match your project structure
 
 
 
@@ -27,6 +28,21 @@ const Header = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
+
+  const customColors = {
+    primary: '#FF5722', // Example primary color
+    secondary: '#2196F3', // Example secondary color
+    background: '#F5F5F5', // Example background color
+    text: '#333', // Example text color
+  };
+
+  const dropdownButtonStyle = {
+    marginRight: '10px',
+    borderRadius: '4px',
+    backgroundColor: customColors.secondary, // Custom button color
+    transition: 'background-color 0.3s ease', // Smooth hover effect
+    border: '1px solid rgba(255, 255, 255, 0.5)'
+  };
 
   const [restaurantData, setRestaurantData] = useState({
     _id: '',
@@ -134,6 +150,10 @@ const Header = () => {
     } catch (error) {
       console.error("Error modifying restaurant:", error);
     }
+  };
+
+  const handleDropdownHover = (e, color) => {
+    e.target.style.backgroundColor = color; 
   };
 
   const handleDeleteRestaurant = async () => {
@@ -307,6 +327,10 @@ const Header = () => {
     }
   };
 
+  const handleOpenMyOrders = () => {
+    // Implement the logic for opening My Orders here.
+  };  
+
   const isValidEmail = (email) => {
     // Basic email validation: check for "@" and a valid domain suffix
     return /\S+@\S+\.\S+/.test(email);
@@ -314,13 +338,15 @@ const Header = () => {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <Box display="flex" alignItems="center" flexGrow={1}>
+      <AppBar position="static" className="header">
+      <Toolbar style={{ background: 'linear-gradient(to right, #ff8a00, #ec4e20)' }} className="header">
+        
+        <Box display="flex" alignItems="center" flexGrow={1}>
             <img src="/logo.png" alt="Logo" style={{ width: '50px', marginRight: '15px' }} />
-            <Typography variant="h6">Hunger Express</Typography>
+            <Typography variant="h6" style={{ fontFamily: 'Roboto', fontSize: '24px', color: '#333' }}>
+              Hunger Express
+            </Typography>
           </Box>
-
           <Box mx={2} display="flex" alignItems="center">
             <TextField
               value={searchTerm}
@@ -335,14 +361,12 @@ const Header = () => {
           </Box>
 
           <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
-            <Button
+          <Button
               color="inherit"
               onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
-              style={{
-                marginRight: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '4px',
-              }}
+              style={dropdownButtonStyle}
+              onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}
+              onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}
             >
               Order Food {isOrderFoodOpen ? '▲' : '▼'}
             </Button>
@@ -358,27 +382,43 @@ const Header = () => {
             )}
           </Box>
           <Button
-            color="inherit"
+            color="primary"
             style={{
               marginRight: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
               borderRadius: '4px',
+              backgroundColor: customColors.secondary, // Custom button color
+              transition: 'background-color 0.3s ease', // Smooth hover effect
             }}
-            onClick={() => {/* Handle My Orders logic here */ }}
+            onClick={handleOpenMyOrders}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#1976D2'; // Change color on hover
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = customColors.secondary; // Restore color on hover out
+            }}
           >
             My Orders
           </Button>
           <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
-              <Button
-                color="inherit"
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  borderRadius: '4px',
-                }}
-              >
-                Restaurants {isOpen ? '▲' : '▼'}
-              </Button>
+          <Button
+              color="primary"
+              onClick={() => setIsOpen(!isOpen)}
+              style={{
+                marginRight: '10px',
+                borderRadius: '4px',
+                backgroundColor: customColors.secondary, // Custom button color
+                transition: 'background-color 0.3s ease', // Smooth hover effect
+                color: 'white'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#1976D2'; // Change color on hover
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = customColors.secondary; // Restore color on hover out
+              }}
+            >
+              Restaurants {isOpen ? '▲' : '▼'}
+            </Button>
               {isOpen && (
                 <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
                   <li>
@@ -394,25 +434,32 @@ const Header = () => {
               )}
             </Box>
 
-          <Button
+            <Button
             color="inherit"
-            onClick={() => setIsChangePasswordModalOpen(true)}
             style={{
               marginRight: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
               borderRadius: '4px',
+              backgroundColor: customColors.secondary, // Custom button color
+              transition: 'background-color 0.3s ease', // Smooth hover effect
+              color: 'white'
+            }}
+            onClick={() => setIsChangePasswordModalOpen(true)}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#1976D2'; // Change color on hover
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = customColors.secondary; // Restore color on hover out
             }}
           >
             Change Password
           </Button>
           <Box className="profile-dropdown" ref={profileDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
-            <Button
+          <Button
               color="inherit"
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              style={{
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '4px',
-              }}
+              style={dropdownButtonStyle}
+              onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}
+              onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}
             >
               Profile {isProfileDropdownOpen ? '▲' : '▼'}
             </Button>
