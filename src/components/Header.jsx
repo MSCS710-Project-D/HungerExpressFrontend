@@ -27,6 +27,7 @@ const Header = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
+  const user_type = useSelector(state => state.user?.user_type);
 
   const [restaurantData, setRestaurantData] = useState({
     _id: '',
@@ -47,6 +48,40 @@ const Header = () => {
     phone_number: '',
     address: '',
   });
+
+  // Function to render the "Restaurants" button based on user_type
+  const renderRestaurantsButton = () => {
+    if (user_type === 'admin') {
+      return (
+        <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
+          <Button
+            color="inherit"
+            onClick={() => setIsOpen(!isOpen)}
+            style={{
+              border: '1px solid rgba(255, 255, 255, 0.5)',
+              borderRadius: '4px',
+            }}
+          >
+            Restaurants {isOpen ? '▲' : '▼'}
+          </Button>
+          {isOpen && (
+            <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
+              <li>
+                <Button onClick={() => handleOpenRestaurantModal('add')}>Add Restaurant</Button>
+              </li>
+              <li>
+                <Button onClick={() => handleOpenRestaurantModal('modify')}>Modify Restaurant</Button>
+              </li>
+              <li>
+                <Button onClick={() => handleOpenRestaurantModal('delete')}>Delete Restaurant</Button>
+              </li>
+            </ul>
+          )}
+        </Box>
+      );
+    }
+    return null; // Return null if user_type is not 'admin'
+  };
 
   const dropdownRef = useRef(null);
   const restaurantDropdownRef = useRef(null);
@@ -134,26 +169,28 @@ const Header = () => {
     } catch (error) {
       console.error("Error modifying restaurant:", error);
     }
-  };
+};
 
-  const handleDeleteRestaurant = async () => {
-    try {
-      const response = await dispatch(deleteRestaurant(restaurantData._id));
-      setIsRestaurantModalOpen(false);
-      setRestaurantData({
-        _id: '',
-        name: '',
-        description: '',
-        address: '',
-        phone_number: '',
-        owner_id: '',
-        category_id: '',
-        restaurantImg: '',
-      });
-    } catch (error) {
-      console.error("Error deleting restaurant:", error);
-    }
-  };
+
+const handleDeleteRestaurant = async () => {
+  try {
+    const response = await dispatch(deleteRestaurant(restaurantData._id));
+    setIsRestaurantModalOpen(false);
+    setRestaurantData({
+      _id: '',
+      name: '',
+      description: '',
+      address: '',
+      phone_number: '',
+      owner_id: '',
+      category_id: '',
+      restaurantImg: '',
+    });
+  } catch (error) {
+    console.error("Error deleting restaurant:", error);
+  }
+};
+
 
   const handleRestaurantActions = (action) => {
     if (restaurantAction === 'add') {
@@ -367,33 +404,8 @@ const Header = () => {
             onClick={() => {/* Handle My Orders logic here */ }}
           >
             My Orders
-          </Button>
-          <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
-              <Button
-                color="inherit"
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  borderRadius: '4px',
-                }}
-              >
-                Restaurants {isOpen ? '▲' : '▼'}
-              </Button>
-              {isOpen && (
-                <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
-                  <li>
-                    <Button onClick={() => handleOpenRestaurantModal('add')}>Add Restaurant</Button>
-                  </li>
-                  <li>
-                    <Button onClick={() => handleOpenRestaurantModal('modify')}>Modify Restaurant</Button>
-                  </li>
-                  <li>
-                    <Button onClick={() => handleOpenRestaurantModal('delete')}>Delete Restaurant</Button>
-                  </li>
-                </ul>
-              )}
-            </Box>
-
+            </Button>
+            {renderRestaurantsButton()} {/* Render the "Restaurants" button conditionally */}
           <Button
             color="inherit"
             onClick={() => setIsChangePasswordModalOpen(true)}

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import '../styles/restaurants.scss';
 import { updateRestaurant, deleteRestaurant } from '../actions/restaurantActions';
+import { useSelector } from 'react-redux';
 
 const BASE_URL = "https://us-central1-maristhungerexpress.cloudfunctions.net/api/";
 
-const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
+const RestaurantPane = ({ restaurant, onRestaurantClick, user_type, onDelete }) => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [editableRestaurant, setEditableRestaurant] = useState(null);
 
@@ -23,17 +24,13 @@ const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
         }
     };
 
-    const handleDeleteClick = async (restaurantId) => {
-        try {
-            await deleteRestaurant(restaurantId);
-            alert('Restaurant deleted successfully!');
-        } catch (error) {
-            alert('Error deleting restaurant. Please try again.');
-        }
+    const handleDeleteClick = async () => {
+        // Call the onDelete function passed from Home.jsx
+        onDelete(restaurant._id);
     };
 
     return (
-        <div className="restaurant-pane" style={{width: '350px'}}>
+        <div className="restaurant-pane" style={{ width: '350px' }}>
             <div onClick={() => onRestaurantClick(restaurant._id)}>
                 <img width={350} height={350} src={restaurant.restaurantImg} alt={restaurant.name} className="restaurant-images" />
                 <div className="restaurant-name">{restaurant.name}</div>
@@ -49,10 +46,13 @@ const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
                     </div>
                 </div>
             </div>
-            <div className="restaurant-actions">
-                <button className="edit-button" onClick={() => handleEditClick(restaurant)}>Edit</button>
-                <button className="delete-button" onClick={() => handleDeleteClick(restaurant._id)}>Delete</button>
-            </div>
+            {/* Display the edit and delete buttons based on user_type */}
+            {user_type === 'admin' && (
+                <div className="restaurant-actions">
+                    <button className="edit-button" onClick={() => handleEditClick(restaurant)}>Edit</button>
+                    <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
+                </div>
+            )}
             {isModalOpen && (
                 <div className="menu-modal-overlay">
                     <div className="menu-modal">

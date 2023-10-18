@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSelector } from 'react-redux'; 
 
 const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const [quantities, setQuantities] = useState({});
     const [isAddMenuItemDialogOpen, setIsAddMenuItemDialogOpen] = useState(false);
     const [searchId, setSearchId] = useState(''); // For searching by ID
     const [localMenuItems, setLocalMenuItems] = useState(menuItems);
+    const userRole = useSelector(state => state.user?.user_role); 
 
     // State for the new menu item form
     const [newMenuItem, setNewMenuItem] = useState({
@@ -23,11 +25,10 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const handleOpenAddMenuItemDialog = () => {
         setNewMenuItem(prevState => ({
             ...prevState,
-            restaurant_id: restaurant._id // Prepopulate the restaurant_id field
+            restaurant_id: restaurant._id
         }));
         setIsAddMenuItemDialogOpen(true);
     };
-
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -161,7 +162,9 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         <div className="menu-modal-overlay">
             <div className="menu-modal">
                 <button className="close-button" onClick={onClose}>&times;</button>
-                <button className="add-menu-item-button" onClick={handleOpenAddMenuItemDialog}>Add Menu Item</button>
+                {userRole === 'admin' && ( // Conditionally render the button for admins
+                    <button className="add-menu-item-button" onClick={handleOpenAddMenuItemDialog}>Add Menu Item</button>
+                )}
                 <input 
                     type="text" 
                     placeholder="Enter menu item ID" 
