@@ -15,9 +15,11 @@ export const fetchRestaurants = async () => {
 export const addRestaurant = async (restaurant) => {
     try {
         const response = await axios.post(`${base_url}/restaurant/create`, restaurant);
+        alert('Restaurant added successfully!');
         return response.data;
     } catch (error) {
         console.error("Error adding restaurant:", error);
+        alert('Error adding restaurant. Please try again.');
         return [];
     }
 }

@@ -18,7 +18,7 @@ const RestaurantPane = ({ restaurant, onRestaurantClick, user_type, onDelete }) 
         try {
             await updateRestaurant(editableRestaurant);
             alert('Restaurant updated successfully!');
-            setModalOpen(false);
+            setModalOpen(false); 
         } catch (error) {
             alert('Error updating restaurant. Please try again.');
         }
