@@ -3,9 +3,11 @@ import { combineReducers } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from './reducers/authSlice';
+import orderReducer from './reducers/orderSlice';
 
 const rootReducer = combineReducers({
-  auth: authReducer
+  auth: authReducer,
+  order: orderReducer
 });
 
 const persistConfig = {

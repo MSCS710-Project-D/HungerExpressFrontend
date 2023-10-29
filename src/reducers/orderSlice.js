@@ -20,9 +20,20 @@ const orderSlice = createSlice({
   initialState,
   reducers: {
     addOrderItem: (state, action) => {
-      const item = action.payload;
-      state.orderItems.push(item);
-      state.order.total_price += item.subtotal;
+        const item = action.payload;
+        const existingItemIndex = state.orderItems.findIndex(i => i.item_id.$oid === item.item_id.$oid);
+
+        if (existingItemIndex !== -1) {
+            // If the item already exists in the cart, update its quantity and subtotal
+            state.orderItems[existingItemIndex].quantity += item.quantity;
+            state.orderItems[existingItemIndex].subtotal += item.subtotal;
+        } else {
+            // If the item is new, add it to the orderItems array
+            state.orderItems.push(item);
+        }
+
+        // Update the total price of the order
+        state.order.total_price += item.subtotal;
     },
     removeOrderItem: (state, action) => {
       const itemId = action.payload;

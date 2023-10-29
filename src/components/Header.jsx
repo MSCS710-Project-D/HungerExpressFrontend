@@ -31,6 +31,7 @@ const Header = () => {
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
   const [isMyOrdersOpen, setIsMyOrdersOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  const order = useSelector((state) => state.order);
 
   const customColors = {
     primary: '#FF5722', // Example primary color
@@ -579,7 +580,7 @@ const Header = () => {
                   // Handle cart click logic here
                 }}
               >
-                <ShoppingCartIcon style={{ marginRight: '5px' }} />
+                <ShoppingCartIcon style={{ marginRight: '5px' }} /> {order?.orderItems?.length}
               </Button>
             )
           }

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingSpinner from './LoadingSpinner';
+import { addOrderItem } from '../reducers/orderSlice'; 
+import { useDispatch } from 'react-redux'; // Import useDispatch
 
 
 const MenuModal = ({ restaurant, menuItems, onClose }) => {
@@ -11,6 +13,8 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const [searchId, setSearchId] = useState(''); // For searching by ID
     const [localMenuItems, setLocalMenuItems] = useState(menuItems);
     const [isLoading, setIsLoading] = useState(false);
+
+    const dispatch = useDispatch(); // Define dispatch
 
     // State for the new menu item form
     const [newMenuItem, setNewMenuItem] = useState({
@@ -170,8 +174,18 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         handleOpenAddMenuItemDialog(); // Open the dialog
     };
 
-    const handleAddToCart = (itemName) => {
-        alert(`${itemName} added to cart!`);
+    const handleAddToCart = (item) => {
+        // Create a new order item based on the selected menu item
+        const orderItem = {
+            item_id: item._id,
+            quantity: quantities[item._id] || 1, // Use the quantity from state or default to 1
+            subtotal: item.price * (quantities[item._id] || 1)
+        };
+    
+        // Dispatch the addOrderItem action to update the Redux state
+        dispatch(addOrderItem(orderItem));
+    
+        alert(`${item.name} added to cart!`);
     };
 
     
