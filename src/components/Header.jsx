@@ -28,6 +28,8 @@ const Header = () => {
   const [isRestaurantModalOpen, setIsRestaurantModalOpen] = useState(false);
   const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
+  const [isMyOrdersOpen, setIsMyOrdersOpen] = useState(false);
+  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
 
   const customColors = {
     primary: '#FF5722', // Example primary color
@@ -67,6 +69,20 @@ const Header = () => {
   const dropdownRef = useRef(null);
   const restaurantDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
+  const myOrdersRef = useRef(null);
+
+   // Effect for My Orders dropdown
+   useEffect(() => {
+    const handleClickOutsideMyOrders = (event) => {
+      if (myOrdersRef.current && !myOrdersRef.current.contains(event.target)) {
+        setIsMyOrdersOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideMyOrders);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideMyOrders);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutsideRestaurant = (event) => {
@@ -88,6 +104,7 @@ const Header = () => {
       document.removeEventListener('mousedown', handleClickOutsideProfile);
     };
   }, []);
+  
   const handleOpenRestaurantModal = (action) => {
     setRestaurantAction(action);
     if (action === 'add') {
@@ -184,6 +201,20 @@ const Header = () => {
       handleDeleteRestaurant();
     }
   }
+
+useEffect(() => {
+  function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setIsMyOrdersOpen(false);  // Close the dropdown
+      }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+      // Cleanup the event listener on component unmount
+      document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -328,9 +359,43 @@ const Header = () => {
   };
 
   const handleOpenMyOrders = () => {
-    // Implement the logic for opening My Orders here.
+    setIsOrderDropdownOpen(prevState => !prevState); // Toggle the dropdown state
   };  
 
+const renderOrderDropdown = () => {
+      if (currentUser) { // Check if a user is logged in
+        return (
+          <Box className="order-dropdown" ref={orderFoodRef} style={{ position: 'relative', marginRight: '10px' }}>
+            <Button
+              color="inherit"
+              onClick={handleOpenMyOrders} // Use the event handler here
+              style={{
+                marginRight: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                borderRadius: '4px',
+              }}
+            >
+              My Orders {isOrderDropdownOpen ? '▲' : '▼'}
+            </Button>
+            {isOrderDropdownOpen && (
+              <ul className={`dropdown-menu ${isOrderDropdownOpen ? 'show' : ''}`}>
+                <li>
+                  <Button component={Link} to="/recent-order">
+                    Recent Order
+                  </Button>
+                </li>
+                <li>
+                  <Button component={Link} to="/order-history">
+                    Order History
+                  </Button>
+                </li>
+              </ul>
+            )}
+          </Box>
+        );
+      }
+      return null;
+  };
   const isValidEmail = (email) => {
     // Basic email validation: check for "@" and a valid domain suffix
     return /\S+@\S+\.\S+/.test(email);
@@ -381,24 +446,27 @@ const Header = () => {
               </ul>
             )}
           </Box>
-          <Button
-            color="primary"
-            style={{
-              marginRight: '10px',
-              borderRadius: '4px',
-              backgroundColor: customColors.secondary, // Custom button color
-              transition: 'background-color 0.3s ease', // Smooth hover effect
-            }}
-            onClick={handleOpenMyOrders}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#1976D2'; // Change color on hover
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = customColors.secondary; // Restore color on hover out
-            }}
-          >
-            My Orders
-          </Button>
+          <div ref={dropdownRef} style={{ position: 'relative' }}>
+              <Button
+                  color="inherit"
+                  onClick={() => setIsMyOrdersOpen(!isMyOrdersOpen)}
+                  style={dropdownButtonStyle}  // Use the same style as Order Food
+                  onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}  // Use the same hover effect
+                  onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}  // Use the same hover out effect
+              >
+                  My Orders {isMyOrdersOpen ? '▲' : '▼'}
+              </Button>
+              {isMyOrdersOpen && (
+                  <ul className={`dropdown-menu ${isMyOrdersOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+                      <li>
+                          <Button>Recent Order</Button>
+                      </li>
+                      <li>
+                          <Button>Order History</Button>
+                      </li>
+                  </ul>
+              )}
+          </div>
           <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
           <Button
               color="primary"
