@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import Settings from './Settings';
 import Typography from '@mui/material/Typography'; // Keep this single import for Typography
 import '../styles/Header.scss'; // Adjust the file path to match your project structure
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 
 
@@ -71,8 +72,8 @@ const Header = () => {
   const profileDropdownRef = useRef(null);
   const myOrdersRef = useRef(null);
 
-   // Effect for My Orders dropdown
-   useEffect(() => {
+  // Effect for My Orders dropdown
+  useEffect(() => {
     const handleClickOutsideMyOrders = (event) => {
       if (myOrdersRef.current && !myOrdersRef.current.contains(event.target)) {
         setIsMyOrdersOpen(false);
@@ -104,7 +105,7 @@ const Header = () => {
       document.removeEventListener('mousedown', handleClickOutsideProfile);
     };
   }, []);
-  
+
   const handleOpenRestaurantModal = (action) => {
     setRestaurantAction(action);
     if (action === 'add') {
@@ -170,7 +171,7 @@ const Header = () => {
   };
 
   const handleDropdownHover = (e, color) => {
-    e.target.style.backgroundColor = color; 
+    e.target.style.backgroundColor = color;
   };
 
   const handleDeleteRestaurant = async () => {
@@ -202,20 +203,20 @@ const Header = () => {
     }
   }
 
-useEffect(() => {
-  function handleClickOutside(event) {
+  useEffect(() => {
+    function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          setIsMyOrdersOpen(false);  // Close the dropdown
+        setIsMyOrdersOpen(false);  // Close the dropdown
       }
-  }
+    }
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
       // Cleanup the event listener on component unmount
       document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
-  
+    };
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -258,7 +259,7 @@ useEffect(() => {
       enqueueSnackbar('Invalid phone number format. Please enter a 10-digit number.', { variant: 'error' });
       return;
     }
-  
+
     try {
       await dispatch(updateUserAsync(profileData));
       enqueueSnackbar('Update User Success', { variant: 'success' });
@@ -360,41 +361,41 @@ useEffect(() => {
 
   const handleOpenMyOrders = () => {
     setIsOrderDropdownOpen(prevState => !prevState); // Toggle the dropdown state
-  };  
+  };
 
-const renderOrderDropdown = () => {
-      if (currentUser) { // Check if a user is logged in
-        return (
-          <Box className="order-dropdown" ref={orderFoodRef} style={{ position: 'relative', marginRight: '10px' }}>
-            <Button
-              color="inherit"
-              onClick={handleOpenMyOrders} // Use the event handler here
-              style={{
-                marginRight: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '4px',
-              }}
-            >
-              My Orders {isOrderDropdownOpen ? '▲' : '▼'}
-            </Button>
-            {isOrderDropdownOpen && (
-              <ul className={`dropdown-menu ${isOrderDropdownOpen ? 'show' : ''}`}>
-                <li>
-                  <Button component={Link} to="/recent-order">
-                    Recent Order
-                  </Button>
-                </li>
-                <li>
-                  <Button component={Link} to="/order-history">
-                    Order History
-                  </Button>
-                </li>
-              </ul>
-            )}
-          </Box>
-        );
-      }
-      return null;
+  const renderOrderDropdown = () => {
+    if (currentUser && user?.user_type !== "admin") { // Check if a user is logged in
+      return (
+        <Box className="order-dropdown" ref={orderFoodRef} style={{ position: 'relative', marginRight: '10px' }}>
+          <Button
+            color="inherit"
+            onClick={handleOpenMyOrders} // Use the event handler here
+            style={{
+              marginRight: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.5)',
+              borderRadius: '4px',
+            }}
+          >
+            My Orders {isOrderDropdownOpen ? '▲' : '▼'}
+          </Button>
+          {isOrderDropdownOpen && (
+            <ul className={`dropdown-menu ${isOrderDropdownOpen ? 'show' : ''}`}>
+              <li>
+                <Button component={Link} to="/recent-order">
+                  Recent Order
+                </Button>
+              </li>
+              <li>
+                <Button component={Link} to="/order-history">
+                  Order History
+                </Button>
+              </li>
+            </ul>
+          )}
+        </Box>
+      );
+    }
+    return null;
   };
   const isValidEmail = (email) => {
     // Basic email validation: check for "@" and a valid domain suffix
@@ -405,7 +406,7 @@ const renderOrderDropdown = () => {
     <>
       <AppBar position="static" className="header" style={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
         <Toolbar style={{ background: 'linear-gradient(to right, #ff8a00, #ec4e20)' }} className="header">
-        
+
           <Box display="flex" alignItems="center" flexGrow={1}>
             <img src="/logo.png" alt="Logo" style={{ width: '50px', marginRight: '15px' }} />
             <Typography variant="h6" style={{ fontFamily: 'Roboto', fontSize: '24px', color: '#333' }}>
@@ -418,7 +419,7 @@ const renderOrderDropdown = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search..."
               variant="outlined"
-              style={{ backgroundColor: 'white', width: '600px' }} // Adjust the width value as needed
+              style={{ backgroundColor: 'white', width: '450px' }} // Adjust the width value as needed
             />
             <Button color="primary" variant="contained" onClick={handleSearch}>
               Search
@@ -426,15 +427,19 @@ const renderOrderDropdown = () => {
           </Box>
 
           <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
-          <Button
-              color="inherit"
-              onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
-              style={dropdownButtonStyle}
-              onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}
-              onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}
-            >
-              Order Food {isOrderFoodOpen ? '▲' : '▼'}
-            </Button>
+            {
+              user?.user_type !== 'admin' && (
+                <Button
+                  color="inherit"
+                  onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
+                  style={dropdownButtonStyle}
+                  onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}
+                  onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}
+                >
+                  Order Food {isOrderFoodOpen ? '▲' : '▼'}
+                </Button>
+              )
+            }
             {isOrderFoodOpen && (
               <ul className={`dropdown-menu ${isOrderFoodOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0' }}>
                 <li>
@@ -447,62 +452,69 @@ const renderOrderDropdown = () => {
             )}
           </Box>
           <div ref={dropdownRef} style={{ position: 'relative' }}>
-              <Button
+            {
+              user?.user_type !== "admin" && (
+                <Button
                   color="inherit"
                   onClick={() => setIsMyOrdersOpen(!isMyOrdersOpen)}
                   style={dropdownButtonStyle}  // Use the same style as Order Food
                   onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}  // Use the same hover effect
                   onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}  // Use the same hover out effect
-              >
+                >
                   My Orders {isMyOrdersOpen ? '▲' : '▼'}
-              </Button>
-              {isMyOrdersOpen && (
-                  <ul className={`dropdown-menu ${isMyOrdersOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
-                      <li>
-                          <Button>Recent Order</Button>
-                      </li>
-                      <li>
-                          <Button>Order History</Button>
-                      </li>
-                  </ul>
-              )}
+                </Button>
+              )
+            }
+            {isMyOrdersOpen && (
+              <ul className={`dropdown-menu ${isMyOrdersOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+                <li>
+                  <Button>Recent Order</Button>
+                </li>
+                <li>
+                  <Button>Order History</Button>
+                </li>
+              </ul>
+            )}
           </div>
           <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
+            {
+              user?.user_type === 'admin' && (
+                <Button
+                  color="primary"
+                  onClick={() => setIsOpen(!isOpen)}
+                  style={{
+                    marginRight: '10px',
+                    borderRadius: '4px',
+                    backgroundColor: customColors.secondary, // Custom button color
+                    transition: 'background-color 0.3s ease', // Smooth hover effect
+                    color: 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#1976D2'; // Change color on hover
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = customColors.secondary; // Restore color on hover out
+                  }}
+                >
+                  Restaurants {isOpen ? '▲' : '▼'}
+                </Button>
+              )
+            }
+            {isOpen && (
+              <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
+                <li>
+                  <Button onClick={() => handleOpenRestaurantModal('add')}>Add Restaurant</Button>
+                </li>
+                <li>
+                  <Button onClick={() => handleOpenRestaurantModal('modify')}>Modify Restaurant</Button>
+                </li>
+                <li>
+                  <Button onClick={() => handleOpenRestaurantModal('delete')}>Delete Restaurant</Button>
+                </li>
+              </ul>
+            )}
+          </Box>
           <Button
-              color="primary"
-              onClick={() => setIsOpen(!isOpen)}
-              style={{
-                marginRight: '10px',
-                borderRadius: '4px',
-                backgroundColor: customColors.secondary, // Custom button color
-                transition: 'background-color 0.3s ease', // Smooth hover effect
-                color: 'white'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#1976D2'; // Change color on hover
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = customColors.secondary; // Restore color on hover out
-              }}
-            >
-              Restaurants {isOpen ? '▲' : '▼'}
-            </Button>
-              {isOpen && (
-                <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`}>
-                  <li>
-                    <Button onClick={() => handleOpenRestaurantModal('add')}>Add Restaurant</Button>
-                  </li>
-                  <li>
-                    <Button onClick={() => handleOpenRestaurantModal('modify')}>Modify Restaurant</Button>
-                  </li>
-                  <li>
-                    <Button onClick={() => handleOpenRestaurantModal('delete')}>Delete Restaurant</Button>
-                  </li>
-                </ul>
-              )}
-            </Box>
-
-            <Button
             color="inherit"
             style={{
               marginRight: '10px',
@@ -522,7 +534,7 @@ const renderOrderDropdown = () => {
             Change Password
           </Button>
           <Box className="profile-dropdown" ref={profileDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
-          <Button
+            <Button
               color="inherit"
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               style={dropdownButtonStyle}
@@ -552,11 +564,30 @@ const renderOrderDropdown = () => {
               </ul>
             )}
           </Box>
+          {
+            user?.user_type !== 'admin' && (
+              <Button
+                color="inherit"
+                style={{
+                  marginRight: '10px',
+                  borderRadius: '4px',
+                  backgroundColor: customColors.secondary, // Custom button color
+                  transition: 'background-color 0.3s ease', // Smooth hover effect
+                  color: 'white'
+                }}
+                onClick={() => {
+                  // Handle cart click logic here
+                }}
+              >
+                <ShoppingCartIcon style={{ marginRight: '5px' }} />
+              </Button>
+            )
+          }
         </Toolbar>
       </AppBar>
 
       <Dialog open={isRestaurantModalOpen} onClose={() => setIsRestaurantModalOpen(false)}>
-      
+
         <DialogTitle>
           {restaurantAction === 'add' && 'Add Restaurant'}
           {restaurantAction === 'modify' && 'Modify Restaurant'}
@@ -645,8 +676,8 @@ const renderOrderDropdown = () => {
               handleUserIdChange(newUserId);
             }}
             style={{ marginTop: '20px', marginBottom: '10px', width: '100%' }} // Added marginTop: '20px'
-            />
-         <TextField
+          />
+          <TextField
             label="Email"
             variant="outlined"
             value={profileData.email}
@@ -660,41 +691,41 @@ const renderOrderDropdown = () => {
           />
 
           <TextField
-                label="Phone Number"
-                variant="outlined"
-                value={profileData.phone_number}
-                onChange={(e) => {
-                  const phoneNumber = e.target.value;
-                  if (phoneNumber === '' || /^\d+$/.test(phoneNumber)) {
-                    setProfileData((prev) => ({ ...prev, phone_number: phoneNumber }));
-                  }
-                }}
-                inputProps={{
-                  type: 'number',
-                  pattern: '[0-9]*'
-                }}
-                style={{ marginBottom: '10px', width: '100%' }}
-              />
+            label="Phone Number"
+            variant="outlined"
+            value={profileData.phone_number}
+            onChange={(e) => {
+              const phoneNumber = e.target.value;
+              if (phoneNumber === '' || /^\d+$/.test(phoneNumber)) {
+                setProfileData((prev) => ({ ...prev, phone_number: phoneNumber }));
+              }
+            }}
+            inputProps={{
+              type: 'number',
+              pattern: '[0-9]*'
+            }}
+            style={{ marginBottom: '10px', width: '100%' }}
+          />
 
-            {Object.keys(profileData).map((key) => (
-                  <div key={key}>
-                    {key !== 'username' && key !== 'phone_number' && key !== 'email' && (
-                      <>
-                        <Typography variant="body1">{key}</Typography>
-                        <TextField
-                          label={`New ${key}`}
-                          variant="outlined"
-                          value={profileData[key]}
-                          onChange={(e) => setProfileData((prev) => ({ ...prev, [key]: e.target.value }))}
-                          style={{ marginBottom: '10px' }}
-                        />
-                      </>
-                    )}
-                  </div>
-                ))}
-                <Button variant="contained" color="primary" onClick={handleUpdateSubmit}>
-                  Update
-                </Button>
+          {Object.keys(profileData).map((key) => (
+            <div key={key}>
+              {key !== 'username' && key !== 'phone_number' && key !== 'email' && (
+                <>
+                  <Typography variant="body1">{key}</Typography>
+                  <TextField
+                    label={`New ${key}`}
+                    variant="outlined"
+                    value={profileData[key]}
+                    onChange={(e) => setProfileData((prev) => ({ ...prev, [key]: e.target.value }))}
+                    style={{ marginBottom: '10px' }}
+                  />
+                </>
+              )}
+            </div>
+          ))}
+          <Button variant="contained" color="primary" onClick={handleUpdateSubmit}>
+            Update
+          </Button>
         </DialogContent>
       </Dialog>
 
