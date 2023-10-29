@@ -28,6 +28,42 @@ const Header = () => {
   const [restaurantAction, setRestaurantAction] = useState(''); // 'add', 'modify', or 'delete'
   const [restaurantImage, setRestaurantImage] = useState(null); // State to hold the uploaded image
   const user_type = useSelector(state => state.user?.user_type);
+  const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
+  // States for My Orders and Profile dropdowns
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMyOrdersOpen, setIsMyOrdersOpen] = useState(false);
+
+  // Refs for My Orders and Profile dropdowns
+  const myOrdersRef = useRef(null);
+  const profileRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+   // Effect for My Orders dropdown
+   useEffect(() => {
+    const handleClickOutsideMyOrders = (event) => {
+      if (myOrdersRef.current && !myOrdersRef.current.contains(event.target)) {
+        setIsMyOrdersOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideMyOrders);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideMyOrders);
+    };
+  }, []);
+
+  // Effect for Profile dropdown
+  useEffect(() => {
+    const handleClickOutsideProfile = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideProfile);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideProfile);
+    };
+  }, []);
+
 
   const [restaurantData, setRestaurantData] = useState({
     _id: '',
@@ -83,7 +119,6 @@ const Header = () => {
     return null; // Return null if user_type is not 'admin'
   };
 
-  const dropdownRef = useRef(null);
   const restaurantDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
 
@@ -107,6 +142,7 @@ const Header = () => {
       document.removeEventListener('mousedown', handleClickOutsideProfile);
     };
   }, []);
+
   const handleOpenRestaurantModal = (action) => {
     setRestaurantAction(action);
     if (action === 'add') {
@@ -133,6 +169,72 @@ const Header = () => {
     }
   };
 
+  const renderOrderDropdown = () => {
+    if (currentUser) { // Check if a user is logged in
+      return (
+        <Box className="order-dropdown" ref={orderFoodRef} style={{ position: 'relative', marginRight: '10px' }}>
+          <Button
+            color="inherit"
+            onClick={() => setIsOrderDropdownOpen(!isOrderDropdownOpen)}
+            style={{
+              marginRight: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.5)',
+              borderRadius: '4px',
+            }}
+          >
+            My Orders {isOrderDropdownOpen ? '▲' : '▼'}
+          </Button>
+          {isOrderDropdownOpen && (
+            <ul className={`dropdown-menu ${isOrderDropdownOpen ? 'show' : ''}`}>
+              <li>
+                <Button component={Link} to="/recent-order">
+                  Recent Order
+                </Button>
+              </li>
+              <li>
+                <Button component={Link} to="/order-history">
+                  Order History
+                </Button>
+              </li>
+            </ul>
+          )}
+        </Box>
+      );
+    }
+    return null;
+  };
+
+  useEffect(() => {
+        // Function to handle outside click
+        function handleOutsideClick(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsMyOrdersOpen(false);
+            }
+        }
+
+        // Add the outside click listener
+        document.addEventListener('mousedown', handleOutsideClick);
+
+        // Cleanup the listener when the component is unmounted
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, []);
+  
+  useEffect(() => {
+    const handleClickOutsideOrder = (event) => {
+      if (orderFoodRef.current && !orderFoodRef.current.contains(event.target)) {
+        setIsOrderDropdownOpen(false);
+      }
+    };
+  
+    document.addEventListener('mousedown', handleClickOutsideOrder);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideOrder);
+    };
+  }, []);
+
+  
   const handleAddRestaurant = async () => {
     try {
       const response = await dispatch(addRestaurant(restaurantData));
@@ -351,106 +453,118 @@ const handleDeleteRestaurant = async () => {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <Box display="flex" alignItems="center" flexGrow={1}>
-            <img src="/logo.png" alt="Logo" style={{ width: '50px', marginRight: '15px' }} />
-            <Typography variant="h6">Hunger Express</Typography>
-          </Box>
+      <AppBar position="static" style={{ backgroundColor: '#007BFF' }}>
+    <Toolbar>
+        <Box display="flex" alignItems="center" flexGrow={1}>
+            <img src="/logo.png" alt="Logo" height="50px" style={{ marginRight: '15px' }} />
+            <Typography variant="h6" style={{ color: 'white' }}>Hunger Express</Typography>
+        </Box>
 
-          <Box mx={2} display="flex" alignItems="center">
+        <Box mx={2} display="flex" alignItems="center">
             <TextField
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
-              variant="outlined"
-              style={{ backgroundColor: 'white', width: '600px' }} // Adjust the width value as needed
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Discover Restaurants or Cuisines..."
+                variant="outlined"
+                style={{ backgroundColor: 'white', borderRadius: '25px', height: '50px', width: '600px' }}
             />
-            <Button color="primary" variant="contained" onClick={handleSearch}>
-              Search
+            <Button color="primary" variant="contained" onClick={handleSearch} style={{ marginLeft: '10px', backgroundColor: '#FFA500' }}>
+                Search
             </Button>
-          </Box>
+        </Box>
 
-          <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
+        <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
             <Button
-              color="inherit"
-              onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
-              style={{
-                marginRight: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '4px',
-              }}
+                color="inherit"
+                onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
+                style={{ marginRight: '10px', borderRadius: '4px', transition: 'all 0.3s' }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}
             >
-              Order Food {isOrderFoodOpen ? '▲' : '▼'}
+                Discover {isOrderFoodOpen ? '▲' : '▼'}
             </Button>
             {isOrderFoodOpen && (
-              <ul className={`dropdown-menu ${isOrderFoodOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0' }}>
-                <li>
-                  <Button onClick={() => {/* Handle Search by Cuisines logic */ }}>Search by Cuisines</Button>
-                </li>
-                <li>
-                  <Button onClick={() => {/* Handle Search by Restaurants logic */ }}>Search by Restaurants</Button>
-                </li>
-              </ul>
+                <ul className={`dropdown-menu ${isOrderFoodOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0' }}>
+                    <li>
+                        <Button onClick={() => {/* Handle Search by Cuisines logic */ }}>By Cuisines</Button>
+                    </li>
+                    <li>
+                        <Button onClick={() => {/* Handle Search by Restaurants logic */ }}>By Restaurants</Button>
+                    </li>
+                </ul>
             )}
           </Box>
-          <Button
-            color="inherit"
-            style={{
-              marginRight: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
-              borderRadius: '4px',
-            }}
-            onClick={() => {/* Handle My Orders logic here */ }}
-          >
-            My Orders
+          <div ref={dropdownRef} style={{ position: 'relative' }}>
+            <Button
+                color="inherit"
+                onClick={() => setIsMyOrdersOpen(!isMyOrdersOpen)}
+                style={{ marginRight: '10px', borderRadius: '4px' }}
+            >
+                My Orders {isMyOrdersOpen ? '▲' : '▼'}
             </Button>
-            {renderRestaurantsButton()} {/* Render the "Restaurants" button conditionally */}
-          <Button
-            color="inherit"
-            onClick={() => setIsChangePasswordModalOpen(true)}
-            style={{
-              marginRight: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
-              borderRadius: '4px',
-            }}
-          >
-            Change Password
-          </Button>
-          <Box className="profile-dropdown" ref={profileDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
+            {isMyOrdersOpen && (
+                <ul className={`dropdown-menu ${isMyOrdersOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+                    <li>
+                        <Button>Recent Order</Button>
+                    </li>
+                    <li>
+                        <Button>Order History</Button>
+                    </li>
+                </ul>
+            )}
+        </div>
+        {renderRestaurantsButton()}
+          {/* Render the "Restaurants" button conditionally */}
             <Button
               color="inherit"
-              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              onClick={() => setIsChangePasswordModalOpen(true)}
               style={{
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                borderRadius: '4px',
+                marginRight: '10px',
+                transition: 'all 0.3s', // Transition for hover effect
               }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'} // Hover effect
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}
             >
-              Profile {isProfileDropdownOpen ? '▲' : '▼'}
+              Change Password
             </Button>
-            {isProfileDropdownOpen && (
-              <ul className={`dropdown-menu ${isProfileDropdownOpen ? 'show' : ''}`}>
-                <li>
-                  <Button onClick={handleSettingsClick}>Settings</Button>
-                </li>
-                <li>
-                  <Button onClick={handleUpdateClick}>Update</Button>
-                </li>
-                <li>
-                  <Button
-                    onClick={() => {
-                      setIsProfileDropdownOpen(false); // Close the dropdown
-                      dispatch(logout()); // Dispatch the logout action
-                    }}
-                  >
-                    Logout
-                  </Button>
-                </li>
-              </ul>
-            )}
-          </Box>
-        </Toolbar>
+
+            <Box className="profile-dropdown" ref={profileDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
+                <Button
+                  color="inherit"
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  style={{
+                    marginRight: '10px', // Added marginRight for spacing
+                    transition: 'all 0.3s', // Transition for hover effect
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'} // Hover effect
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = ''}
+                >
+                  Profile {isProfileDropdownOpen ? '▲' : '▼'}
+                </Button>
+                {isProfileDropdownOpen && (
+                  <ul className={`dropdown-menu ${isProfileDropdownOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0' }}>
+                    <li>
+                      <Button onClick={handleSettingsClick}>Settings</Button>
+                    </li>
+                    <li>
+                      <Button onClick={handleUpdateClick}>Update</Button>
+                    </li>
+                    <li>
+                      <Button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false); // Close the dropdown
+                          dispatch(logout()); // Dispatch the logout action
+                        }}
+                      >
+                        Logout
+                      </Button>
+                    </li>
+                  </ul>
+                )}
+            </Box>
+          </Toolbar>
       </AppBar>
+
 
       <Dialog open={isRestaurantModalOpen} onClose={() => setIsRestaurantModalOpen(false)}>
       
