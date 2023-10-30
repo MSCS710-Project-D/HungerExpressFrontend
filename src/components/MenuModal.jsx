@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import LoadingSpinner from './LoadingSpinner';
 import { addOrderItem } from '../reducers/orderSlice'; 
 import { useDispatch } from 'react-redux'; // Import useDispatch
+import { useSelector } from 'react-redux';
 
 
 const MenuModal = ({ restaurant, menuItems, onClose }) => {
@@ -13,6 +14,8 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const [searchId, setSearchId] = useState(''); // For searching by ID
     const [localMenuItems, setLocalMenuItems] = useState(menuItems);
     const [isLoading, setIsLoading] = useState(false);
+    const cart = useSelector(state => state.order);
+    const user = useSelector((state) => state.auth.user);
 
     const dispatch = useDispatch(); // Define dispatch
 
@@ -183,7 +186,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         };
     
         // Dispatch the addOrderItem action to update the Redux state
-        dispatch(addOrderItem(orderItem));
+        dispatch(addOrderItem(item));
     
         alert(`${item.name} added to cart!`);
     };
@@ -225,11 +228,16 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                                 <p>Allergy Info: {item.allergy_info.join(', ') || 'None'}</p>
                                 <p>Calories: {item.calories}</p>
                             </div>
+                            {
+                            user.user_type === 'admin' && (
                             <div className="menu-item-actions">
+                               
                                 <button className="edit-button" onClick={() => handleEditMenuItem(item)}>Edit</button>
                                 <button className="delete-button" onClick={() => deleteMenuItem(item._id)}>Delete</button>
-                                <button className="add-to-cart-button" onClick={() => handleAddToCart(item.name)}>Add to Cart</button>
                             </div>
+                            )}
+                            <button className="add-to-cart-button" onClick={() => handleAddToCart(item.name)}>Add to Cart</button>
+
                         </div>
                     ))}
                 </div>
