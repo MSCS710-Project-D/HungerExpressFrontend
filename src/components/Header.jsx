@@ -13,6 +13,7 @@ import Settings from './Settings';
 import Typography from '@mui/material/Typography'; // Keep this single import for Typography
 import '../styles/Header.scss'; // Adjust the file path to match your project structure
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { clearOrder } from '../reducers/orderSlice';
 
 
 
@@ -32,6 +33,8 @@ const Header = () => {
   const [isMyOrdersOpen, setIsMyOrdersOpen] = useState(false);
   const [isOrderDropdownOpen, setIsOrderDropdownOpen] = useState(false);
   const order = useSelector((state) => state.order);
+  const [isCartDialogOpen, setIsCartDialogOpen] = useState(false);
+  const cart = useSelector(state => state.order);
 
   const customColors = {
     primary: '#FF5722', // Example primary color
@@ -132,6 +135,10 @@ const Header = () => {
       setRestaurantImage(file);
     }
   };
+
+  const handleLogout = () => {
+    dispatch(clearOrder());
+  }
 
   const handleAddRestaurant = async () => {
     try {
@@ -572,13 +579,11 @@ const Header = () => {
                 style={{
                   marginRight: '10px',
                   borderRadius: '4px',
-                  backgroundColor: customColors.secondary, // Custom button color
-                  transition: 'background-color 0.3s ease', // Smooth hover effect
+                  backgroundColor: customColors.secondary,
+                  transition: 'background-color 0.3s ease',
                   color: 'white'
                 }}
-                onClick={() => {
-                  // Handle cart click logic here
-                }}
+                onClick={() => setIsCartDialogOpen(true)}
               >
                 <ShoppingCartIcon style={{ marginRight: '5px' }} /> {order?.orderItems?.length}
               </Button>
@@ -586,6 +591,40 @@ const Header = () => {
           }
         </Toolbar>
       </AppBar>
+      <Dialog open={isCartDialogOpen} onClose={() => setIsCartDialogOpen(false)}>
+      <DialogTitle>Shopping Cart</DialogTitle>
+      <DialogContent>
+        {order?.orderItems?.length ? (
+          <>
+            {order.orderItems.map((item, index) => {
+                console.log("Item:", item, "Subtotal:", item.subtotal, "Price:", item.price, "Quantity:", item.quantity); 
+                const itemId = item?.item_id?.$oid;
+                if (!itemId) {
+                  console.warn("Unexpected item structure:", item);
+                  return null;
+                }
+
+                return (
+            <div key={itemId}>
+                      <Typography variant="h6">{item.name}</Typography>
+                      <Typography variant="body1">Quantity: {item.quantity}</Typography>
+                      <Typography variant="body1">Price: ${item.price}</Typography>
+                      <Typography variant="body1">Subtotal: ${item.subtotal || (item.price * item.quantity)}</Typography>
+                    </div>
+                  );
+                })}
+                <Typography variant="body1">
+                Total: ${order.orderItems.reduce((acc, item) => {
+                    console.log("Accumulator:", acc, "Item Subtotal:", item.subtotal || (item.price * item.quantity));
+                    return acc + (item.subtotal || (item.price * item.quantity));
+                }, 0)}
+                </Typography>
+            </>
+          ) : (
+            <Typography variant="body1">Your cart is empty.</Typography>
+          )}
+        </DialogContent>
+        </Dialog>
 
       <Dialog open={isRestaurantModalOpen} onClose={() => setIsRestaurantModalOpen(false)}>
 
