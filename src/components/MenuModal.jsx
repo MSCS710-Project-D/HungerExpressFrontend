@@ -3,6 +3,9 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingSpinner from './LoadingSpinner';
+import { addOrderItem } from '../reducers/orderSlice'; 
+import { useDispatch } from 'react-redux'; // Import useDispatch
+import { useSelector } from 'react-redux';
 
 
 const MenuModal = ({ restaurant, menuItems, onClose }) => {
@@ -11,6 +14,10 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const [searchId, setSearchId] = useState(''); // For searching by ID
     const [localMenuItems, setLocalMenuItems] = useState(menuItems);
     const [isLoading, setIsLoading] = useState(false);
+    const cart = useSelector(state => state.order);
+    const user = useSelector((state) => state.auth.user);
+
+    const dispatch = useDispatch(); // Define dispatch
 
     // State for the new menu item form
     const [newMenuItem, setNewMenuItem] = useState({
@@ -170,8 +177,19 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         handleOpenAddMenuItemDialog(); // Open the dialog
     };
 
-    const handleAddToCart = (itemName) => {
-        alert(`${itemName} added to cart!`);
+    const handleAddToCart = (item) => {
+        debugger;
+        // Create a new order item based on the selected menu item
+        const orderItem = {
+            ...item,
+            quantity: quantities[item._id] || 1, // Use the quantity from state or default to 1
+            subtotal: item.price * (quantities[item._id] || 1),
+        };
+    
+        // Dispatch the addOrderItem action to update the Redux state
+        dispatch(addOrderItem({...orderItem, user_id: user._id}));
+    
+        alert(`${item.name} added to cart!`);
     };
 
     
@@ -211,11 +229,16 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                                 <p>Allergy Info: {item.allergy_info.join(', ') || 'None'}</p>
                                 <p>Calories: {item.calories}</p>
                             </div>
+                            {
+                            user.user_type === 'admin' && (
                             <div className="menu-item-actions">
+                               
                                 <button className="edit-button" onClick={() => handleEditMenuItem(item)}>Edit</button>
                                 <button className="delete-button" onClick={() => deleteMenuItem(item._id)}>Delete</button>
-                                <button className="add-to-cart-button" onClick={() => handleAddToCart(item.name)}>Add to Cart</button>
                             </div>
+                            )}
+                            <button className="add-to-cart-button" onClick={() => handleAddToCart(item)}>Add to Cart</button>
+
                         </div>
                     ))}
                 </div>

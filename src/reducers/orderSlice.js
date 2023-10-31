@@ -8,10 +8,9 @@ const initialState = {
     restaurant_id: null,
     delivery_address: '',
     total_price: 0,
-    payment_info_id: null
+    paymentInfo: '' 
   },
   orderItems: [],
-  status: 'idle',
   error: null
 };
 
@@ -20,21 +19,45 @@ const orderSlice = createSlice({
   initialState,
   reducers: {
     addOrderItem: (state, action) => {
-      const item = action.payload;
-      state.orderItems.push(item);
-      state.order.total_price += item.subtotal;
-    },
+        const item = action.payload;
+      
+        console.log("Adding item to cart:", action.payload);
+        state.order.user_id = item.user_id;
+
+        // Safely access the $oid property
+        const itemId = item?._id;
+        if (!itemId) {
+          console.warn("Unexpected item structure:", item);
+          return;
+        }
+        const existingItem = state.orderItems.find(i => i._id === itemId);
+      
+        if (existingItem) {
+          existingItem.quantity += item.quantity;
+          existingItem.subtotal = existingItem.price * existingItem.quantity;
+        } else {
+          state.orderItems.push({ ...item, subtotal: item.price * item.quantity });
+        }
+
+        state.order.restaurant_id = item.restaurant_id;
+      
+      
+        // Update the total price of the order
+        state.order.total_price = state.orderItems.reduce((acc, item) => acc + item.subtotal, 0);
+      },
     removeOrderItem: (state, action) => {
       const itemId = action.payload;
-      const itemIndex = state.orderItems.findIndex(item => item._id.$oid === itemId);
+      const itemIndex = state.orderItems.findIndex(item => item._id === itemId);
       if (itemIndex !== -1) {
-        state.order.total_price -= state.orderItems[itemIndex].subtotal;
         state.orderItems.splice(itemIndex, 1);
       }
+
+      // Update the total price of the order after removing an item
+      state.order.total_price = state.orderItems.reduce((acc, item) => acc + item.subtotal, 0);
     },
     updateOrderItem: (state, action) => {
       const updatedItem = action.payload;
-      const itemIndex = state.orderItems.findIndex(item => item._id.$oid === updatedItem._id.$oid);
+      const itemIndex = state.orderItems.findIndex(item => item._id === updatedItem._id);
       if (itemIndex !== -1) {
         state.order.total_price -= state.orderItems[itemIndex].subtotal;
         state.orderItems[itemIndex] = updatedItem;
@@ -45,7 +68,6 @@ const orderSlice = createSlice({
       state.order = initialState.order;
       state.orderItems = [];
     }
-    // Additional reducers can be added here
   },
   extraReducers: (builder) => {
     builder
@@ -67,7 +89,6 @@ const orderSlice = createSlice({
       .addCase(deleteOrderById.fulfilled, (state, action) => {
         state.orders = state.orders.filter(order => order._id !== action.payload._id);
       });
-    // Additional reducers for orderHistory can be added here
   }
 });
 
