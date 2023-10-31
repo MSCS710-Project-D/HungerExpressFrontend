@@ -1,8 +1,10 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+const base_url = "https://us-central1-maristhungerexpress.cloudfunctions.net/api"
+
 export const createOrder = createAsyncThunk('order/createOrder', async (orderData) => {
-  const response = await axios.post("/orders/create", orderData);
+  const response = await axios.post(`${base_url}/orders/create`, orderData);
   return response.data;
 });
 

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import {useNavigate} from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
@@ -35,6 +36,7 @@ const Header = () => {
   const order = useSelector((state) => state.order);
   const [isCartDialogOpen, setIsCartDialogOpen] = useState(false);
   const cart = useSelector(state => state.order);
+  const navigate = useNavigate();
 
   const customColors = {
     primary: '#FF5722', // Example primary color
@@ -592,39 +594,47 @@ const Header = () => {
         </Toolbar>
       </AppBar>
       <Dialog open={isCartDialogOpen} onClose={() => setIsCartDialogOpen(false)}>
-      <DialogTitle>Shopping Cart</DialogTitle>
-      <DialogContent>
-        {order?.orderItems?.length ? (
-          <>
-            {order.orderItems.map((item, index) => {
-                console.log("Item:", item, "Subtotal:", item.subtotal, "Price:", item.price, "Quantity:", item.quantity); 
-                const itemId = item?.item_id?.$oid;
+        <DialogTitle>Shopping Cart</DialogTitle>
+        <DialogContent>
+          {order?.orderItems?.length ? (
+            <>
+              {order.orderItems.map((item, index) => {
+                console.log("Item:", item, "Subtotal:", item.subtotal, "Price:", item.price, "Quantity:", item.quantity);
+                const itemId = item?._id;
                 if (!itemId) {
                   console.warn("Unexpected item structure:", item);
                   return null;
                 }
 
                 return (
-            <div key={itemId}>
-                      <Typography variant="h6">{item.name}</Typography>
-                      <Typography variant="body1">Quantity: {item.quantity}</Typography>
-                      <Typography variant="body1">Price: ${item.price}</Typography>
-                      <Typography variant="body1">Subtotal: ${item.subtotal || (item.price * item.quantity)}</Typography>
-                    </div>
-                  );
-                })}
-                <Typography variant="body1">
-                Total: ${order.orderItems.reduce((acc, item) => {
-                    console.log("Accumulator:", acc, "Item Subtotal:", item.subtotal || (item.price * item.quantity));
-                    return acc + (item.subtotal || (item.price * item.quantity));
-                }, 0)}
-                </Typography>
+                  <div key={itemId}>
+                    <Typography variant="h6">{item.name}</Typography>
+                    <Typography variant="body1">Quantity: {item.quantity}</Typography>
+                    <Typography variant="body1">Price: ${item.price}</Typography>
+                    <Typography variant="body1">Subtotal: ${item.subtotal}</Typography>
+                  </div>
+                );
+              })}
+              <Typography variant="body1">
+                Total: {order.order.total_price}
+              </Typography>
             </>
           ) : (
             <Typography variant="body1">Your cart is empty.</Typography>
           )}
         </DialogContent>
-        </Dialog>
+        <DialogActions>
+          <Button onClick={() => setIsCartDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={() => {
+            navigate('/checkout');
+            setIsCartDialogOpen(false);
+          }} color="primary">
+            Checkout
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={isRestaurantModalOpen} onClose={() => setIsRestaurantModalOpen(false)}>
 

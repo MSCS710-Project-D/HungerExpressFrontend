@@ -178,15 +178,16 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     };
 
     const handleAddToCart = (item) => {
+        debugger;
         // Create a new order item based on the selected menu item
         const orderItem = {
-            item_id: item._id,
+            ...item,
             quantity: quantities[item._id] || 1, // Use the quantity from state or default to 1
-            subtotal: item.price * (quantities[item._id] || 1)
+            subtotal: item.price * (quantities[item._id] || 1),
         };
     
         // Dispatch the addOrderItem action to update the Redux state
-        dispatch(addOrderItem(item));
+        dispatch(addOrderItem({...orderItem, user_id: user._id}));
     
         alert(`${item.name} added to cart!`);
     };
@@ -236,7 +237,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                                 <button className="delete-button" onClick={() => deleteMenuItem(item._id)}>Delete</button>
                             </div>
                             )}
-                            <button className="add-to-cart-button" onClick={() => handleAddToCart(item.name)}>Add to Cart</button>
+                            <button className="add-to-cart-button" onClick={() => handleAddToCart(item)}>Add to Cart</button>
 
                         </div>
                     ))}
