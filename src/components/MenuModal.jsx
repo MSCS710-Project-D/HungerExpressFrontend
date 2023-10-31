@@ -197,7 +197,8 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         <div className="menu-modal-overlay">
             <div className="menu-modal">
                 <button className="close-button" onClick={onClose}>&times;</button>
-                <button className="add-menu-item-button" onClick={handleOpenAddMenuItemDialog}>Add Menu Item</button>
+                
+                
                 <input 
                     type="text" 
                     placeholder="Enter menu item ID" 
@@ -231,8 +232,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                             </div>
                             {
                             user.user_type === 'admin' && (
-                            <div className="menu-item-actions">
-                               
+                            <div className="menu-item-actions">      
                                 <button className="edit-button" onClick={() => handleEditMenuItem(item)}>Edit</button>
                                 <button className="delete-button" onClick={() => deleteMenuItem(item._id)}>Delete</button>
                             </div>

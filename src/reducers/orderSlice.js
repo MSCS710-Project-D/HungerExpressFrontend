@@ -8,11 +8,13 @@ const initialState = {
     restaurant_id: null,
     delivery_address: '',
     total_price: 0,
-    paymentInfo: '' 
+    // paymentInfo: '' 
   },
   orderItems: [],
   error: null
 };
+
+
 
 const orderSlice = createSlice({
   name: 'order',

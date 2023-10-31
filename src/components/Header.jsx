@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography'; // Keep this single import fo
 import '../styles/Header.scss'; // Adjust the file path to match your project structure
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { clearOrder } from '../reducers/orderSlice';
+import { Table, TableBody, TableCell, TableHead, TableRow, Avatar } from '@mui/material';
 
 
 
@@ -594,48 +595,65 @@ const Header = () => {
         </Toolbar>
       </AppBar>
       <Dialog open={isCartDialogOpen} onClose={() => setIsCartDialogOpen(false)}>
-        <DialogTitle>Shopping Cart</DialogTitle>
-        <DialogContent>
-          {order?.orderItems?.length ? (
-            <>
-              {order.orderItems.map((item, index) => {
-                console.log("Item:", item, "Subtotal:", item.subtotal, "Price:", item.price, "Quantity:", item.quantity);
-                const itemId = item?._id;
-                if (!itemId) {
-                  console.warn("Unexpected item structure:", item);
-                  return null;
-                }
+          <DialogTitle>Shopping Cart</DialogTitle>
+          <DialogContent>
+            {order?.orderItems?.length ? (
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Image</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Subtotal</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {order.orderItems.map((item, index) => {
+                    const itemId = item?._id;
+                    if (!itemId) {
+                      console.warn("Unexpected item structure:", item);
+                      return null;
+                    }
 
-                return (
-                  <div key={itemId}>
-                    <Typography variant="h6">{item.name}</Typography>
-                    <Typography variant="body1">Quantity: {item.quantity}</Typography>
-                    <Typography variant="body1">Price: ${item.price}</Typography>
-                    <Typography variant="body1">Subtotal: ${item.subtotal}</Typography>
-                  </div>
-                );
-              })}
-              <Typography variant="body1">
-                Total: {order.order.total_price}
-              </Typography>
-            </>
-          ) : (
-            <Typography variant="body1">Your cart is empty.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsCartDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={() => {
-            navigate('/checkout');
-            setIsCartDialogOpen(false);
-          }} color="primary">
-            Checkout
-          </Button>
-        </DialogActions>
-      </Dialog>
-
+                    return (
+                      <TableRow key={itemId}>
+                        <TableCell>
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} style={{ width: '50px', height: '50px' }} />
+                          ) : (
+                            <Avatar variant="square">N/A</Avatar>
+                          )}
+                        </TableCell>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell>${item.price}</TableCell>
+                        <TableCell>${item.subtotal}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  <TableRow>
+                    <TableCell colSpan={4} align="right">Total:</TableCell>
+                    <TableCell>${order.order.total_price}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            ) : (
+              <Typography variant="body1">Your cart is empty.</Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsCartDialogOpen(false)} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              navigate('/checkout');
+              setIsCartDialogOpen(false);
+            }} color="primary">
+              Checkout
+            </Button>
+          </DialogActions>
+        </Dialog>
       <Dialog open={isRestaurantModalOpen} onClose={() => setIsRestaurantModalOpen(false)}>
 
         <DialogTitle>
