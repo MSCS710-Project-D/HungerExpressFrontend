@@ -384,12 +384,14 @@ const Header = () => {
       <AppBar position="static" className="header" style={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
         <Toolbar style={{ background: 'linear-gradient(to right, #ff8a00, #ec4e20)' }} className="header">
 
-          <Box display="flex" alignItems="center" flexGrow={1}>
+        <Box display="flex" alignItems="center" flexGrow={1}>
             <img src="/logo.png" alt="Logo" style={{ width: '50px', marginRight: '15px' }} />
-            <Typography variant="h6" style={{ fontFamily: 'Roboto', fontSize: '24px', color: '#333' }}>
-              Hunger Express
-            </Typography>
-          </Box>
+            <Link to="/Home" style={{ textDecoration: 'none' }}>
+                <Typography variant="h6" style={{ fontFamily: 'Roboto', fontSize: '24px', color: '#333' }}>
+                    Hunger Express
+                </Typography>
+            </Link>
+        </Box>
           <Box mx={2} display="flex" alignItems="center">
             <TextField
               value={searchTerm}

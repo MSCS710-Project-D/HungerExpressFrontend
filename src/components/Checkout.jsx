@@ -3,10 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createOrder } from '../actions/order';
 import { Paper, Grid, TextField, FormControlLabel, Checkbox, Button } from '@mui/material';
 import '../styles/Checkout.scss';
+import Confetti from 'react-confetti';
+
 
 function Checkout() {
     const dispatch = useDispatch();
     const order = useSelector((state) => state.order);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const [deliveryAddress, setDeliveryAddress] = useState({
         firstName: '',
@@ -101,11 +104,20 @@ function Checkout() {
         }
     
         dispatch(createOrder(newOrder));
+         // Show confetti and success message
+        setShowSuccess(true);
+
+        // Redirect to home after 5 seconds
+        setTimeout(() => {
+            setShowSuccess(false); // Hide confetti and success message
+            window.location.href = "/home"; // Redirect to home page
+        }, 5000);
     };
     
     return (
         <div className="checkout-container">
             <h2>Checkout</h2>
+           
             <Paper elevation={3} className="checkout-paper">
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3}>
@@ -253,7 +265,12 @@ function Checkout() {
                     <Button type="submit" variant="contained" color="primary" className="place-order-button">Place Order</Button>
                 </form>
             </Paper>
-
+            {showSuccess && (
+                <>
+                    <Confetti />
+                    <div className="success-message">Order created successfully!</div>
+                </>
+            )}
         </div>
     );
 }    

@@ -22,3 +22,13 @@ h3 {
 .mui-text-field {
     margin-bottom: 16px; // Adjust this value as needed for desired spacing
 }
+
+.success-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: green;
+    z-index: 1000; // Ensure it's above other elements
+}
