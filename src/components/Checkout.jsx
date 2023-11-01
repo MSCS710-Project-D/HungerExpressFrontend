@@ -103,15 +103,21 @@ function Checkout() {
             newOrder.order.payment_info = paypalDetails;
         }
     
-        dispatch(createOrder(newOrder));
-         // Show confetti and success message
-        setShowSuccess(true);
+        dispatch(createOrder(newOrder))
+        .then(() => {
+            // Show confetti and success message upon successful dispatch
+            setShowSuccess(true);
 
-        // Redirect to home after 5 seconds
-        setTimeout(() => {
-            setShowSuccess(false); // Hide confetti and success message
-            window.location.href = "/home"; // Redirect to home page
-        }, 5000);
+            // Redirect to home after 5 seconds
+            setTimeout(() => {
+                setShowSuccess(false); // Hide confetti and success message
+                window.location.href = "/home"; // Redirect to home page
+            }, 5000);
+        })
+        .catch(error => {
+            // Handle any errors from the dispatch here
+            console.error("Error creating order:", error);
+        });
     };
     
     return (

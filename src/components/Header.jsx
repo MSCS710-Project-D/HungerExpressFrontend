@@ -386,7 +386,7 @@ const Header = () => {
 
         <Box display="flex" alignItems="center" flexGrow={1}>
             <img src="/logo.png" alt="Logo" style={{ width: '50px', marginRight: '15px' }} />
-            <Link to="/Home" style={{ textDecoration: 'none' }}>
+            <Link to="/home" style={{ textDecoration: 'none' }}>
                 <Typography variant="h6" style={{ fontFamily: 'Roboto', fontSize: '24px', color: '#333' }}>
                     Hunger Express
                 </Typography>
