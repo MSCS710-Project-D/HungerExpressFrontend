@@ -6,7 +6,7 @@ import LoadingSpinner from './LoadingSpinner';
 import { addOrderItem } from '../reducers/orderSlice'; 
 import { useDispatch } from 'react-redux'; // Import useDispatch
 import { useSelector } from 'react-redux';
-
+import '../styles/menuStyles.scss';
 
 const MenuModal = ({ restaurant, menuItems, onClose }) => {
     const [quantities, setQuantities] = useState({});
@@ -237,8 +237,13 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                                 <button className="delete-button" onClick={() => deleteMenuItem(item._id)}>Delete</button>
                             </div>
                             )}
-                            <button className="add-to-cart-button" onClick={() => handleAddToCart(item)}>Add to Cart</button>
-
+                            <button 
+                                className="add-to-cart-button" 
+                                onClick={() => handleAddToCart(item)}
+                                disabled={!quantities[item._id] || quantities[item._id] <= 0} // Disable if quantity is 0 or undefined
+                            >
+                                Add to Cart
+                            </button>
                         </div>
                     ))}
                 </div>

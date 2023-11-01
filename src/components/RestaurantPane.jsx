@@ -8,7 +8,14 @@ const BASE_URL = "https://us-central1-maristhungerexpress.cloudfunctions.net/api
 const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [editableRestaurant, setEditableRestaurant] = useState(null);
+    const initialValue = "0"; // replace "some value" with the actual initial value
+    const [isSelected, setIsSelected] = useState(initialValue);
     const user = useSelector((state) => state.auth.user);
+
+    const handlePaneClick = () => {
+        onRestaurantClick(restaurant._id);
+        setIsSelected(true); // Set the restaurant pane as selected
+    };
 
     const handleEditClick = (restaurant) => {
         setEditableRestaurant(restaurant);
@@ -36,7 +43,7 @@ const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
 
     return (
         <div className="restaurant-pane" style={{ width: '350px' }}>
-            <div onClick={() => onRestaurantClick(restaurant._id)}>
+             <div onClick={handlePaneClick}>
                 <img width={350} height={350} src={restaurant.restaurantImg} alt={restaurant.name} className="restaurant-images" />
                 <div className="restaurant-name">{restaurant.name}</div>
                 <div className="restaurant-description">{restaurant.description}</div>
@@ -54,8 +61,20 @@ const RestaurantPane = ({ restaurant, onRestaurantClick }) => {
             {
                 user.user_type === 'admin' && (
                     <div className="restaurant-actions">
-                        <button className="edit-button" onClick={() => handleEditClick(restaurant)}>Edit</button>
-                        <button className="delete-button" onClick={() => handleDeleteClick(restaurant._id)}>Delete</button>
+                        <button 
+                            className="edit-button" 
+                            onClick={() => handleEditClick(restaurant)}
+                            disabled={!isSelected} // Disable if the restaurant is not selected
+                        >
+                            Edit
+                        </button>
+                        <button 
+                            className="delete-button" 
+                            onClick={() => handleDeleteClick(restaurant._id)}
+                            disabled={!isSelected} // Disable if the restaurant is not selected
+                        >
+                            Delete
+                        </button>
                     </div>
                 )
             }
