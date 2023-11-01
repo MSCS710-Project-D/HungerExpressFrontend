@@ -18,6 +18,7 @@ import ResetPassword from "./components/ResetPassword";
 import Checkout from "./components/Checkout";
 import { fetchUserLocation } from "./reducers/locationSlice";
 import Settings from './components/Settings';
+import OrderHistory from "./components/OrderHistory";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -44,6 +45,7 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/order-history" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
         </Routes>
       </Router>
     </>

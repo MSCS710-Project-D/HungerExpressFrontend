@@ -4,6 +4,7 @@ import axios from 'axios';
 const base_url = "https://us-central1-maristhungerexpress.cloudfunctions.net/api"
 
 export const createOrder = createAsyncThunk('order/createOrder', async (orderData) => {
+  debugger;
   const response = await axios.post(`${base_url}/orders/create`, orderData);
   return response.data;
 });

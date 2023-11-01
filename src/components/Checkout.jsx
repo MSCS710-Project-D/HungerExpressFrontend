@@ -94,11 +94,11 @@ function Checkout() {
         };
     
         // // Conditionally add payment_info only if needed
-        // if (paymentMethod === 'cash') {
-        //     newOrder.order.payment_info = {type: "COD", amount: order.order.total_price};
-        // } else if (paypalDetails) {
-        //     newOrder.order.payment_info = paypalDetails;
-        // }
+        if (paymentMethod === 'cash') {
+            newOrder.order.payment_info = {type: "COD", amount: order.order.total_price};
+        } else if (paypalDetails) {
+            newOrder.order.payment_info = paypalDetails;
+        }
     
         dispatch(createOrder(newOrder));
     };

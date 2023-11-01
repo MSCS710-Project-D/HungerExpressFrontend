@@ -8,7 +8,7 @@ const initialState = {
     restaurant_id: null,
     delivery_address: '',
     total_price: 0,
-    // paymentInfo: '' 
+    payment_info: '' 
   },
   orderItems: [],
   error: null

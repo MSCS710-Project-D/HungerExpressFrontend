@@ -374,40 +374,6 @@ const Header = () => {
     setIsOrderDropdownOpen(prevState => !prevState); // Toggle the dropdown state
   };
 
-  const renderOrderDropdown = () => {
-    if (currentUser && user?.user_type !== "admin") { // Check if a user is logged in
-      return (
-        <Box className="order-dropdown" ref={orderFoodRef} style={{ position: 'relative', marginRight: '10px' }}>
-          <Button
-            color="inherit"
-            onClick={handleOpenMyOrders} // Use the event handler here
-            style={{
-              marginRight: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
-              borderRadius: '4px',
-            }}
-          >
-            My Orders {isOrderDropdownOpen ? '▲' : '▼'}
-          </Button>
-          {isOrderDropdownOpen && (
-            <ul className={`dropdown-menu ${isOrderDropdownOpen ? 'show' : ''}`}>
-              <li>
-                <Button component={Link} to="/recent-order">
-                  Recent Order
-                </Button>
-              </li>
-              <li>
-                <Button component={Link} to="/order-history">
-                  Order History
-                </Button>
-              </li>
-            </ul>
-          )}
-        </Box>
-      );
-    }
-    return null;
-  };
   const isValidEmail = (email) => {
     // Basic email validation: check for "@" and a valid domain suffix
     return /\S+@\S+\.\S+/.test(email);
@@ -467,25 +433,31 @@ const Header = () => {
               user?.user_type !== "admin" && (
                 <Button
                   color="inherit"
-                  onClick={() => setIsMyOrdersOpen(!isMyOrdersOpen)}
+                  onClick={() => {
+                    navigate('/order-history')
+                    // setIsMyOrdersOpen(!isMyOrdersOpen);
+                  }}
                   style={dropdownButtonStyle}  // Use the same style as Order Food
                   onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}  // Use the same hover effect
                   onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}  // Use the same hover out effect
                 >
-                  My Orders {isMyOrdersOpen ? '▲' : '▼'}
+                  My Orders
                 </Button>
               )
             }
-            {isMyOrdersOpen && (
+            {/* {isMyOrdersOpen && (
               <ul className={`dropdown-menu ${isMyOrdersOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
                 <li>
                   <Button>Recent Order</Button>
                 </li>
                 <li>
-                  <Button>Order History</Button>
+                  <button onClick={() => {
+                    debugger;
+                    navigate('/order-history')
+                  }}>Order History</button>
                 </li>
               </ul>
-            )}
+            )} */}
           </div>
           <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
             {
@@ -619,8 +591,8 @@ const Header = () => {
                     return (
                       <TableRow key={itemId}>
                         <TableCell>
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.name} style={{ width: '50px', height: '50px' }} />
+                          {item.image_url ? (
+                            <img src={item.image_url} alt={item.name} style={{ width: '50px', height: '50px' }} />
                           ) : (
                             <Avatar variant="square">N/A</Avatar>
                           )}
