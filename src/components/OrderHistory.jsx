@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
     Select, MenuItem, FormControl, InputLabel, Accordion, AccordionSummary, 
@@ -7,6 +8,10 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSelector } from 'react-redux';
 import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
+import Snackbar from '@mui/material/Snackbar';
+import { updateOrder } from '../actions/order.js';
+
 
 const OrderHistory = () => {
     const [filterStatus, setFilterStatus] = useState('');
@@ -14,6 +19,10 @@ const OrderHistory = () => {
     const [filteredOrders, setFilteredOrders] = useState([]);
     const user = useSelector(state => state.auth.user);
     const [expandedOrderId, setExpandedOrderId] = useState(null);
+    const [showToast, setShowToast] = useState(false);
+    // const [isCancelled, setIsCancelled] = useState(order.status === "Canceled");
+
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (user && user._id) {
@@ -30,6 +39,48 @@ const OrderHistory = () => {
             filterStatus === '' || order.order_status === filterStatus
         ).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)));
     }, [filterStatus, orders]);
+
+    const handleCancelClick = async (event, order) => {
+        event.stopPropagation();
+    
+        const { _id: orderId } = order;
+    
+        if (!orderId) {
+            console.error('Order ID is undefined. Cannot proceed with the update.');
+            alert('Error: Unable to cancel the order due to missing order ID.');
+            return;
+        }
+    
+        try {
+            const updatedOrderData = {
+                orderId,
+                orderData: { order_status: 'Canceled' }
+            };
+            await dispatch(updateOrder(updatedOrderData));
+    
+            // Update local state to reflect the change
+            const updatedOrders = orders.map(o => 
+                o._id === orderId ? { ...o, order_status: 'Canceled' } : o
+            );
+            setOrders(updatedOrders);
+    
+            alert('Order has been successfully canceled.');
+        } catch (error) {
+            console.error('Failed to cancel the order:', error);
+            alert('Error: Failed to cancel the order. Please try again.');
+        }
+    };
+    
+
+    // Helper function to check if the order is older than 30 minutes
+    const isOrderOlderThan30Mins = (orderDate) => {
+        const orderTime = new Date(orderDate).getTime();
+        const currentTime = new Date().getTime();
+        const THIRTY_MINUTES = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+        return (currentTime - orderTime) > THIRTY_MINUTES;
+    };
+
 
     return (
         <div style={{ width: '100%', overflowX: 'auto' }}>
@@ -52,55 +103,62 @@ const OrderHistory = () => {
       </FormControl>
 
       {filteredOrders.map((order) => (
-        <Accordion key={order._id} expanded={expandedOrderId === order._id} onChange={() => setExpandedOrderId(expandedOrderId !== order._id ? order._id : null)}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Table style={{ tableLayout: 'fixed', width: '100%' }}>
-            <TableBody>
-                <TableRow>
-                <TableCell style={{ width: '150px' }}>{new Date(order.order_date).toLocaleString()}</TableCell>
-                <TableCell style={{ width: '120px' }}>{order.order_status}</TableCell>
-                <Tooltip title={order.delivery_address}>
-                    <TableCell style={{ 
-                    width: '300px', 
-                    textOverflow: 'ellipsis', 
-                    overflow: 'hidden', 
-                    whiteSpace: 'nowrap' 
-                    }}>
-                    {order.delivery_address}
-                    </TableCell>
-                </Tooltip>
-                <TableCell style={{ width: '100px' }}>${order.total_price.toFixed(2)}</TableCell>
-                </TableRow>
-            </TableBody>
-            </Table>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography component="div">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Image</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Quantity</TableCell>
-                    <TableCell>Subtotal</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {order.order_items.map(item => (
-                    <TableRow key={item._id}>
-                      <TableCell><Avatar src={item.image_url} alt={item.name} /></TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>${item.subtotal.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-      ))}
-    </div>
+                <Accordion key={order._id} expanded={expandedOrderId === order._id} onChange={() => setExpandedOrderId(expandedOrderId !== order._id ? order._id : null)}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Table style={{ tableLayout: 'fixed', width: '100%' }}>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell>{new Date(order.order_date).toLocaleString()}</TableCell>
+                                    <TableCell>{order.order_status}</TableCell>
+                                    <TableCell>{order.delivery_address}</TableCell>
+                                    <TableCell>${order.total_price.toFixed(2)}</TableCell>
+                                    <TableCell align="right">
+                                    <Button 
+                                            variant="contained" 
+                                            color="secondary" 
+                                            disabled={isOrderOlderThan30Mins(order.order_date) || order.order_status === 'Canceled'}
+                                            onClick={(event) => handleCancelClick(event, order)}
+                                        >
+                                            {order.order_status === 'Canceled' ? 'Cancelled' : 'Cancel'}
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Typography component="div">
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Image</TableCell>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell>Quantity</TableCell>
+                                        <TableCell>Subtotal</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {order.order_items.map(item => (
+                                        <TableRow key={item._id}>
+                                            <TableCell><Avatar src={item.image_url} alt={item.name} /></TableCell>
+                                            <TableCell>{item.name}</TableCell>
+                                            <TableCell>{item.quantity}</TableCell>
+                                            <TableCell>${item.subtotal.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Typography>
+                    </AccordionDetails>
+                </Accordion>
+            ))}
+            <Snackbar
+                open={showToast}
+                autoHideDuration={6000}
+                onClose={() => setShowToast(false)}
+                message="Cannot cancel order at this point of time"
+            />
+        </div>
     );
 }
 

@@ -25,7 +25,7 @@ export const getOrdersByUserId = createAsyncThunk('order/getOrdersByUserId', asy
 });
 
 export const updateOrder = createAsyncThunk('order/updateOrder', async ({ orderId, orderData }) => {
-  const response = await axios.put(`/orders/update/${orderId}`, orderData);
+  const response = await axios.put(`${base_url}/orders/update/${orderId}`, orderData);
   return response.data;
 });
 

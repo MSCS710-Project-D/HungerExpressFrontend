@@ -65,6 +65,12 @@ function Checkout() {
     }, [paymentMethod]);
 
 
+    useEffect(() => {
+        if (useDeliveryForBilling) {
+            setBillingAddress(deliveryAddress);
+        }
+    }, [useDeliveryForBilling, deliveryAddress]);
+
     const handleDeliveryChange = (e) => {
         setDeliveryAddress({
             ...deliveryAddress,
@@ -123,7 +129,6 @@ function Checkout() {
     return (
         <div className="checkout-container">
             <h2>Checkout</h2>
-           
             <Paper elevation={3} className="checkout-paper">
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3}>
@@ -195,79 +200,82 @@ function Checkout() {
                                 }
                                 label="Use Delivery Address as Billing Address"
                             />
-                            {!useDeliveryForBilling && (
-                                <>
-                                    <h3>Billing Address</h3>
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="First Name" 
-                                        name="firstName" 
-                                        value={billingAddress.firstName} 
-                                        onChange={handleBillingChange} 
-                                        required 
-                                    />
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="Last Name" 
-                                        name="lastName" 
-                                        value={billingAddress.lastName} 
-                                        onChange={handleBillingChange} 
-                                        required 
-                                    />
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="Address Line 1" 
-                                        name="address1" 
-                                        value={billingAddress.address1} 
-                                        onChange={handleBillingChange} 
-                                        required 
-                                    />
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="Address Line 2" 
-                                        name="address2" 
-                                        value={billingAddress.address2} 
-                                        onChange={handleBillingChange} 
-                                    />
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="City" 
-                                        name="city" 
-                                        value={billingAddress.city} 
-                                        onChange={handleBillingChange} 
-                                        required 
-                                    />
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="Zip Code" 
-                                        name="zipCode" 
-                                        value={billingAddress.zipCode} 
-                                        onChange={handleBillingChange} 
-                                        required 
-                                    />
-                                    <TextField 
-                                        className="mui-text-field"
-                                        label="State" 
-                                        name="state" 
-                                        value={billingAddress.state} 
-                                        onChange={handleBillingChange} 
-                                        required 
-                                    />
-                                </>
-                            )}
+                            <h3>Billing Address</h3>
+                            <TextField 
+                                className="mui-text-field"
+                                label="First Name" 
+                                name="firstName" 
+                                value={billingAddress.firstName} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                                required 
+                            />
+                            <TextField 
+                                className="mui-text-field"
+                                label="Last Name" 
+                                name="lastName" 
+                                value={billingAddress.lastName} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                                required 
+                            />
+                            <TextField 
+                                className="mui-text-field"
+                                label="Address Line 1" 
+                                name="address1" 
+                                value={billingAddress.address1} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                                required 
+                            />
+                            <TextField 
+                                className="mui-text-field"
+                                label="Address Line 2" 
+                                name="address2" 
+                                value={billingAddress.address2} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                            />
+                            <TextField 
+                                className="mui-text-field"
+                                label="City" 
+                                name="city" 
+                                value={billingAddress.city} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                                required 
+                            />
+                            <TextField 
+                                className="mui-text-field"
+                                label="Zip Code" 
+                                name="zipCode" 
+                                value={billingAddress.zipCode} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                                required 
+                            />
+                            <TextField 
+                                className="mui-text-field"
+                                label="State" 
+                                name="state" 
+                                value={billingAddress.state} 
+                                onChange={handleBillingChange} 
+                                disabled={useDeliveryForBilling}
+                                required 
+                            />
                         </Grid>
                     </Grid>
-
+    
                     <h3>Payment Method</h3>
                     <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                         <option value="cash">Cash on Delivery</option>
                         <option value="paypal">PayPal</option>
                     </select>
-
+    
                     {paymentMethod === 'paypal' && (
                         <div ref={paypalRef}></div>
                     )}
-
+    
                     <Button type="submit" variant="contained" color="primary" className="place-order-button">Place Order</Button>
                 </form>
             </Paper>
@@ -279,6 +287,6 @@ function Checkout() {
             )}
         </div>
     );
-}    
+}
 
 export default Checkout;
