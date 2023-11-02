@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSelector } from 'react-redux';
+import Tooltip from '@mui/material/Tooltip';
 
 const OrderHistory = () => {
     const [filterStatus, setFilterStatus] = useState('');
@@ -31,8 +32,8 @@ const OrderHistory = () => {
     }, [filterStatus, orders]);
 
     return (
-<div>
-      <FormControl variant="outlined" style={{ marginBottom: '20px' }}>
+        <div style={{ width: '100%', overflowX: 'auto' }}>
+        <FormControl variant="outlined" style={{ marginBottom: '20px' }}>
         <InputLabel id="order-status-label">Order Status</InputLabel>
         <Select
           labelId="order-status-label"
@@ -53,15 +54,24 @@ const OrderHistory = () => {
       {filteredOrders.map((order) => (
         <Accordion key={order._id} expanded={expandedOrderId === order._id} onChange={() => setExpandedOrderId(expandedOrderId !== order._id ? order._id : null)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Table>
-              <TableBody>
+          <Table style={{ tableLayout: 'fixed', width: '100%' }}>
+            <TableBody>
                 <TableRow>
-                  <TableCell>{new Date(order.order_date).toLocaleString()}</TableCell>
-                  <TableCell>{order.order_status}</TableCell>
-                  <TableCell>{order.delivery_address}</TableCell>
-                  <TableCell>${order.total_price.toFixed(2)}</TableCell>
+                <TableCell style={{ width: '150px' }}>{new Date(order.order_date).toLocaleString()}</TableCell>
+                <TableCell style={{ width: '120px' }}>{order.order_status}</TableCell>
+                <Tooltip title={order.delivery_address}>
+                    <TableCell style={{ 
+                    width: '300px', 
+                    textOverflow: 'ellipsis', 
+                    overflow: 'hidden', 
+                    whiteSpace: 'nowrap' 
+                    }}>
+                    {order.delivery_address}
+                    </TableCell>
+                </Tooltip>
+                <TableCell style={{ width: '100px' }}>${order.total_price.toFixed(2)}</TableCell>
                 </TableRow>
-              </TableBody>
+            </TableBody>
             </Table>
           </AccordionSummary>
           <AccordionDetails>
