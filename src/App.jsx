@@ -46,6 +46,7 @@ function App() {
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/order-history" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/home" />} />
         </Routes>
       </Router>
     </>
