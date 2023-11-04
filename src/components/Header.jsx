@@ -11,13 +11,14 @@ import { fetchRestaurants, addRestaurant, updateRestaurant, deleteRestaurant } f
 import { useSnackbar } from 'notistack';
 import { Link } from 'react-router-dom';
 import Settings from './Settings';
-import Typography from '@mui/material/Typography'; // Keep this single import for Typography
-import '../styles/Header.scss'; // Adjust the file path to match your project structure
+import Typography from '@mui/material/Typography'; 
+import '../styles/Header.scss'; 
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { clearOrder } from '../reducers/orderSlice';
 import { Table, TableBody, TableCell, TableHead, TableRow, Avatar } from '@mui/material';
 import AddVehicleDialog from '../components/AddVehicleDialog';
 import "../styles/VehicleDialog.scss";
+import AddressModal from './AddressModal'; 
 
 
 const Header = () => {
@@ -43,6 +44,7 @@ const Header = () => {
   const driverDropdownRef = useRef(null);
   const [searchLicensePlate, setSearchLicensePlate] = useState('');
   const [isLicensePlateDialogOpen, setIsLicensePlateDialogOpen] = useState(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
 
 
@@ -669,6 +671,11 @@ const handleSearchDriver = () => {
                 <li>
                   <Button onClick={handleUpdateClick}>Update</Button>
                 </li>
+                <Button onClick={() => setIsAddressModalOpen(true)}>Manage Address</Button>
+                <AddressModal 
+                  isOpen={isAddressModalOpen} 
+                  onClose={() => setIsAddressModalOpen(false)} 
+                />
                 <li>
                   <Button
                     onClick={() => {
@@ -681,6 +688,10 @@ const handleSearchDriver = () => {
                 </li>
               </ul>
             )}
+            <AddressModal 
+                isOpen={isAddressModalOpen} 
+                onClose={() => setIsAddressModalOpen(false)} 
+              />
           </Box>
           {
             user?.user_type !== 'admin' && (

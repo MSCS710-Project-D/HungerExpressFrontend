@@ -19,6 +19,7 @@ import Checkout from "./components/Checkout";
 import { fetchUserLocation } from "./reducers/locationSlice";
 import Settings from './components/Settings';
 import OrderHistory from "./components/OrderHistory";
+import { AddressProvider } from './components/AddressContext'; // Import the AddressProvider
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -34,9 +35,9 @@ function App() {
   }, [dispatch]);
 
   return (
-    <>
+    <AddressProvider> {/* Wrap your entire application with AddressProvider */}
       <Router>
-      <Header />
+        <Header />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -49,7 +50,7 @@ function App() {
           <Route path="*" element={<Navigate to="/home" />} />
         </Routes>
       </Router>
-    </>
+    </AddressProvider>
   );
 }
 

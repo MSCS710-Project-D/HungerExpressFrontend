@@ -42,11 +42,8 @@ const OrderHistory = () => {
     }, [filterStatus, orders]);
 
     const generatePDF = (order) => {
-        // Create a new element to render the invoice
         const element = document.createElement('div');
-    
-        // Construct the order items in a table format
-        let orderItemsTable = `
+            let orderItemsTable = `
             <table border="1" cellspacing="0" cellpadding="5">
                 <thead>
                     <tr>
@@ -81,8 +78,6 @@ const OrderHistory = () => {
             ${orderItemsTable}
             <p><strong>Total Price:</strong> $${order.total_price.toFixed(2)}</p>
         `;
-    
-        // Use html2pdf to generate the PDF
         const opt = {
             margin: 10,
             filename: `Invoice_${order._id}.pdf`,
