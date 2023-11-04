@@ -11,6 +11,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import { updateOrder } from '../actions/order.js';
+import html2pdf from 'html2pdf.js';
 
 
 const OrderHistory = () => {
@@ -40,6 +41,58 @@ const OrderHistory = () => {
         ).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)));
     }, [filterStatus, orders]);
 
+    const generatePDF = (order) => {
+        // Create a new element to render the invoice
+        const element = document.createElement('div');
+    
+        // Construct the order items in a table format
+        let orderItemsTable = `
+            <table border="1" cellspacing="0" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+    
+        order.order_items.forEach(item => {
+            orderItemsTable += `
+                <tr>
+                    <td><img src="${item.image_url}" alt="${item.name}" width="50"></td>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${item.subtotal.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+    
+        orderItemsTable += `</tbody></table>`;
+    
+        element.innerHTML = `
+            <h2 style="color: #FF5733; text-shadow: 2px 2px #33FF57;">Hunger Express</h2>
+            <h3>Invoice for Order: ${order._id}</h3>
+            <p>Date: ${new Date(order.order_date).toLocaleString()}</p>
+            <p>Status: ${order.order_status}</p>
+            <p>Delivery Address: ${order.delivery_address}</p>
+            ${orderItemsTable}
+            <p><strong>Total Price:</strong> $${order.total_price.toFixed(2)}</p>
+        `;
+    
+        // Use html2pdf to generate the PDF
+        const opt = {
+            margin: 10,
+            filename: `Invoice_${order._id}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().from(element).set(opt).save();
+    }
+    
     const handleCancelClick = async (event, order) => {
         event.stopPropagation();
     
@@ -113,15 +166,25 @@ const OrderHistory = () => {
                                     <TableCell>{order.delivery_address}</TableCell>
                                     <TableCell>${order.total_price.toFixed(2)}</TableCell>
                                     <TableCell align="right">
-                                    <Button 
-                                            variant="contained" 
-                                            color="secondary" 
-                                            disabled={isOrderOlderThan30Mins(order.order_date) || order.order_status === 'Canceled'}
-                                            onClick={(event) => handleCancelClick(event, order)}
-                                        >
-                                            {order.order_status === 'Canceled' ? 'Cancelled' : 'Cancel'}
-                                        </Button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <Button 
+                                                variant="contained" 
+                                                color="primary" 
+                                                onClick={() => generatePDF(order)}
+                                            >
+                                                Download Invoice
+                                            </Button>
+                                            <Button 
+                                                variant="contained" 
+                                                color="secondary" 
+                                                disabled={isOrderOlderThan30Mins(order.order_date) || order.order_status === 'Canceled'}
+                                                onClick={(event) => handleCancelClick(event, order)}
+                                            >
+                                                {order.order_status === 'Canceled' ? 'Cancelled' : 'Cancel'}
+                                            </Button>
+                                        </div>
                                     </TableCell>
+
                                 </TableRow>
                             </TableBody>
                         </Table>
