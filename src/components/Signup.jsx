@@ -25,15 +25,43 @@ const Signup = () => {
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAddressFields, setShowAddressFields] = useState(false);
 
+  const [address, setAddress] = useState({
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  });
   const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    // Validate email
     if (!isValidEmail(email)) {
       setError("Invalid email format");
       return;
     }
+  
+    // Concatenate address fields
+    const fullAddress = [
+      address.address1,
+      address.address2,
+      address.city,
+      address.state,
+      address.zipCode
+    ].filter(Boolean).join(', '); 
+  
     try {
-      e.preventDefault();
-      const resp = dispatch(signupUserAsync({ email, password, firstName, lastName }));
+      // Assuming you have an action or API call to signup a user
+      const resp = dispatch(signupUserAsync({
+        email,
+        password,
+        firstName,
+        lastName,
+        address: fullAddress 
+      }));
+  
       console.log(resp);
       navigate('/');
     } catch (err) {
@@ -41,6 +69,7 @@ const Signup = () => {
       setError("Signup failed. Please try again.");
     }
   };
+  
 
   const handleLoginRedirect = () => {
     navigate('/login'); // Assuming your login route is '/login'
@@ -156,6 +185,60 @@ const Signup = () => {
                 ),
               }}
             />
+            <Box mt={2}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={showAddressFields}
+                  onChange={() => setShowAddressFields(!showAddressFields)}
+                />
+                {" "}Add Address (Optional)
+              </label>
+            </Box>
+            {showAddressFields && (
+          <>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Address Line 1"
+              variant="outlined"
+              value={address.address1}
+              onChange={(e) => setAddress({ ...address, address1: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Address Line 2"
+              variant="outlined"
+              value={address.address2}
+              onChange={(e) => setAddress({ ...address, address2: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="City"
+              variant="outlined"
+              value={address.city}
+              onChange={(e) => setAddress({ ...address, city: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="State"
+              variant="outlined"
+              value={address.state}
+              onChange={(e) => setAddress({ ...address, state: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Zip Code"
+              variant="outlined"
+              value={address.zipCode}
+              onChange={(e) => setAddress({ ...address, zipCode: e.target.value })}
+            />
+          </>
+        )}
             <Button
               style={{ height: "56px" }}
               variant="contained"
@@ -165,16 +248,16 @@ const Signup = () => {
             >
               Signup
             </Button>
-            </form>
+          </form>
           {error && (
             <Typography variant="body2" color="error" align="center" mt={2}>
               {error}
             </Typography>
           )}
-          <Typography 
-            variant="body2" 
-            align="center" 
-            mt={2} 
+          <Typography
+            variant="body2"
+            align="center"
+            mt={2}
             style={{ cursor: 'pointer', textDecoration: 'underline' }}
             onClick={handleLoginRedirect}
           >

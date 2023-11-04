@@ -36,13 +36,14 @@ export const updateUserAsync = createAsyncThunk(
 export const signupUserAsync = createAsyncThunk(
     'auth/signupUserAsync',
     async (credentials, thunkAPI) => {
-        const { email, password, firstName, lastName } = credentials;
+        const { email, password, firstName, lastName, address } = credentials; // Destructure address from credentials
         try {
             const response = await axios.post(`${base_url}/user/create`, {
                 email,
                 password: password,
                 firstName,
-                lastName
+                lastName,
+                address // Include address in the payload
             });
             return response.data;
         } catch (error) {
