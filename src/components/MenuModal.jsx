@@ -32,12 +32,25 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
 
     const BASE_URL = "https://us-central1-maristhungerexpress.cloudfunctions.net/api";
 
+
+    const handleAddMenuItemButton = () => {
+        if (user.user_type === 'admin') {
+            handleOpenAddMenuItemDialog();
+        } else {
+            toast.error('You do not have permission to add menu items.');
+        }
+    };
+
     const handleOpenAddMenuItemDialog = () => {
-        setNewMenuItem(prevState => ({
-            ...prevState,
-            restaurant_id: restaurant._id // Prepopulate the restaurant_id field
-        }));
-        setIsAddMenuItemDialogOpen(true);
+        if (user.user_type === 'admin') {
+            setNewMenuItem(prevState => ({
+                ...prevState,
+                restaurant_id: restaurant._id // Prepopulate the restaurant_id field
+            }));
+            setIsAddMenuItemDialogOpen(true);
+        } else {
+            toast.error('You do not have permission to add menu items.');
+        }
     };
 
     const handleImageUpload = (e) => {
@@ -116,6 +129,10 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
     };
 
     const handleSubmitMenuItem = () => {
+        if (user.user_type !== 'admin') {
+            toast.error('You do not have permission to perform this action.');
+            return;
+        }
         const payload = {
             restaurant_id: newMenuItem.restaurant_id,
             name: newMenuItem.name,
@@ -197,7 +214,12 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
         <div className="menu-modal-overlay">
             <div className="menu-modal">
                 <button className="close-button" onClick={onClose}>&times;</button>
-                
+
+                {user.user_type === 'admin' && (
+                    <button className="add-menu-item-button" onClick={handleOpenAddMenuItemDialog}>
+                        Add Menu Item
+                    </button>
+                )}
                 
                 <input 
                     type="text" 
@@ -251,7 +273,7 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
             {isAddMenuItemDialogOpen && (
                 <div className="add-menu-item-overlay">
                     <div className="add-menu-item-dialog">
-                    {isLoading && <LoadingSpinner />} 
+                        {isLoading && <LoadingSpinner />} 
                         <h3>Add New Menu Item</h3>
                         <label>
                             Restaurant ID:
@@ -287,7 +309,6 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                                 onChange={handleInputChange} 
                             />
                         </label>
-
                         <label>
                             Or Upload Image:
                             <input 
@@ -297,8 +318,6 @@ const MenuModal = ({ restaurant, menuItems, onClose }) => {
                                 onChange={handleImageUpload} 
                             />
                         </label>
-
-
                         <button onClick={handleSubmitMenuItem}>Save</button>
                         <button onClick={handleCloseAddMenuItemDialog}>Close</button>
                     </div>

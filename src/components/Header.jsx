@@ -11,14 +11,14 @@ import { fetchRestaurants, addRestaurant, updateRestaurant, deleteRestaurant } f
 import { useSnackbar } from 'notistack';
 import { Link } from 'react-router-dom';
 import Settings from './Settings';
-import Typography from '@mui/material/Typography'; 
-import '../styles/Header.scss'; 
+import Typography from '@mui/material/Typography';
+import '../styles/Header.scss';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { clearOrder } from '../reducers/orderSlice';
 import { Table, TableBody, TableCell, TableHead, TableRow, Avatar } from '@mui/material';
 import AddVehicleDialog from '../components/AddVehicleDialog';
 import "../styles/VehicleDialog.scss";
-import AddressModal from './AddressModal'; 
+import AddressModal from './AddressModal';
 
 
 const Header = () => {
@@ -45,7 +45,8 @@ const Header = () => {
   const [searchLicensePlate, setSearchLicensePlate] = useState('');
   const [isLicensePlateDialogOpen, setIsLicensePlateDialogOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState(null);
 
 
   const customColors = {
@@ -79,7 +80,7 @@ const Header = () => {
     vehicle_type: '',
     license_plate: '',
     availability: ''
-});
+  });
 
   const [profileData, setProfileData] = useState({
     username: '',
@@ -89,6 +90,16 @@ const Header = () => {
     phone_number: '',
     address: '',
   });
+
+  const handleDriverClick = (driver) => {
+    setSelectedDriver(driver);  // Set the clicked driver's data
+    setIsEditDialogOpen(true); // Open the edit dialog
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false); // Close the edit dialog
+    setSelectedDriver(null);    // Reset the selected driver's data
+  };
 
   const dropdownRef = useRef(null);
   const restaurantDropdownRef = useRef(null);
@@ -401,66 +412,88 @@ const Header = () => {
       }));
     }
   };
+
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchDrivers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/path-to-fetch-all-drivers-endpoint');
+      const data = await response.json();
+      setDrivers(data);
+    } catch (err) {
+      setError('Failed to fetch drivers.');
+      console.error('Error fetching drivers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
   const handleDeleteDriver = async () => {
     // Confirm with the user
     const isConfirmed = window.confirm('Are you sure you want to delete this driver?');
-    
-    if (isConfirmed) {
-        try {
-            const response = await fetch(`YOUR_API_ENDPOINT?licensePlate=${searchLicensePlate}`, {
-                method: 'DELETE'
-            });
-            if (response.ok) {
-                alert('Driver deleted successfully!');
-            } else {
-                alert('Error deleting driver. Please try again.');
-            }
-        } catch (error) {
-            console.error("Error deleting driver:", error);
-            alert('Error deleting driver. Please try again.');
-        }
-    }
-};
 
-const handleEditDriverClick = () => {
-  setIsLicensePlateDialogOpen(true);
-};
-const handleEditDriver = async (editedVehicle) => {
-    try {
-        const response = await fetch(`YOUR_API_ENDPOINT`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(editedVehicle)
+    if (isConfirmed) {
+      try {
+        const response = await fetch(`YOUR_API_ENDPOINT?licensePlate=${searchLicensePlate}`, {
+          method: 'DELETE'
         });
         if (response.ok) {
-            alert('Driver details updated successfully!');
-            setIsAddVehicleDialogOpen(false);
+          alert('Driver deleted successfully!');
         } else {
-            alert('Error updating driver details. Please try again.');
+          alert('Error deleting driver. Please try again.');
         }
-    } catch (error) {
-        console.error("Error updating driver details:", error);
-        alert('Error updating driver details. Please try again.');
+      } catch (error) {
+        console.error("Error deleting driver:", error);
+        alert('Error deleting driver. Please try again.');
+      }
     }
-};
+  };
 
-const handleSearchDriver = () => {
-  // Fetch the driver details based on the license plate
-  const driverDetails = "Place Holder " //mockFetchDriverByLicensePlate(searchLicensePlate);
-  
-  if (driverDetails) {
+  const handleEditDriverClick = () => {
+    setIsLicensePlateDialogOpen(true);
+  };
+  const handleEditDriver = async (editedVehicle) => {
+    try {
+      const response = await fetch(`YOUR_API_ENDPOINT`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editedVehicle)
+      });
+      if (response.ok) {
+        alert('Driver details updated successfully!');
+        setIsAddVehicleDialogOpen(false);
+      } else {
+        alert('Error updating driver details. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error updating driver details:", error);
+      alert('Error updating driver details. Please try again.');
+    }
+  };
+
+  const handleSearchDriver = () => {
+    // Fetch the driver details based on the license plate
+    const driverDetails = "Place Holder " //mockFetchDriverByLicensePlate(searchLicensePlate);
+
+    if (driverDetails) {
       // Populate the vehicle state with the fetched details
       setVehicle(driverDetails);
       // Open the edit dialog
       setIsAddVehicleDialogOpen(true);
       // Close the license plate dialog
       setIsLicensePlateDialogOpen(false);
-  } else {
+    } else {
       alert('Driver not found!');
-  }
-};
+    }
+  };
 
 
   const handleOpenMyOrders = () => {
@@ -611,7 +644,7 @@ const handleSearchDriver = () => {
           >
             Change Password
           </Button>
-          
+
           {/* Delivery Driver dropdown */}
           <Box className="driver-dropdown" ref={driverDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
             {
@@ -632,11 +665,31 @@ const handleSearchDriver = () => {
                 <li>
                   <Button onClick={handleAddDriver}>Add Driver</Button>
                 </li>
+                <div>
+                  <button onClick={fetchDrivers}>Edit Driver</button>
+                  <ul>
+                    {drivers.map(driver => (
+                      <li key={driver._id} onClick={() => handleDriverClick(driver)}>
+                        {driver.name}
+                      </li>
+                    ))}
+                  </ul>
+                  {isEditDialogOpen && (
+                    <div className="edit-driver-dialog">
+                      <h3>Edit Driver</h3>
+                      {/* Assuming you have a form or input fields to edit the driver's details */}
+                      <input
+                        type="text"
+                        value={selectedDriver ? selectedDriver.name : ''}
+                        onChange={(e) => setSelectedDriver(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                      {/* Add other input fields for other driver details */}
+                      <button onClick={handleCloseEditDialog}>Close</button>
+                    </div>
+                  )}
+                </div>
                 <li>
-                    <Button onClick={handleSearchDriver}>Edit Driver</Button>
-                </li>
-                <li>
-                    <Button onClick={handleDeleteDriver}>Delete Driver</Button>
+                  <Button onClick={handleDeleteDriver}>Delete Driver</Button>
                 </li>
               </ul>
             )}
@@ -672,9 +725,9 @@ const handleSearchDriver = () => {
                   <Button onClick={handleUpdateClick}>Update</Button>
                 </li>
                 <Button onClick={() => setIsAddressModalOpen(true)}>Manage Address</Button>
-                <AddressModal 
-                  isOpen={isAddressModalOpen} 
-                  onClose={() => setIsAddressModalOpen(false)} 
+                <AddressModal
+                  isOpen={isAddressModalOpen}
+                  onClose={() => setIsAddressModalOpen(false)}
                 />
                 <li>
                   <Button
@@ -688,10 +741,10 @@ const handleSearchDriver = () => {
                 </li>
               </ul>
             )}
-            <AddressModal 
-                isOpen={isAddressModalOpen} 
-                onClose={() => setIsAddressModalOpen(false)} 
-              />
+            <AddressModal
+              isOpen={isAddressModalOpen}
+              onClose={() => setIsAddressModalOpen(false)}
+            />
           </Box>
           {
             user?.user_type !== 'admin' && (

@@ -89,7 +89,6 @@ function Checkout() {
     };
 
     const handleAddressSelection = (e) => {
-        setSelectedAddress(e.target.value);
         if (e.target.value === "None") {
             setDeliveryAddress({
                 firstName: '',
@@ -105,7 +104,6 @@ function Checkout() {
             setDeliveryAddress(selectedAddress);
         }
     };
-    
 
     const handleBillingChange = (e) => {
         setBillingAddress({
