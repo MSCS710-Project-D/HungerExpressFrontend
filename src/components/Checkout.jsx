@@ -144,12 +144,18 @@ function Checkout() {
         }
     
         dispatch(createOrder(newOrder))
-        .then(() => {
+        .then((resp) => {
+
+            console.log(resp);
+            localStorage.setItem('order', JSON.stringify(resp));
+            var test = resp;
+            
             // Show confetti and success message upon successful dispatch
             setShowSuccess(true);
 
             // Redirect to home after 5 seconds
             setTimeout(() => {
+                console.log(test)
                 setShowSuccess(false); // Hide confetti and success message
                 window.location.href = "/home"; // Redirect to home page
             }, 5000);

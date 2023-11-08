@@ -19,7 +19,10 @@ import { Table, TableBody, TableCell, TableHead, TableRow, Avatar } from '@mui/m
 import AddVehicleDialog from '../components/AddVehicleDialog';
 import "../styles/VehicleDialog.scss";
 import AddressModal from './AddressModal';
-
+import axios from 'axios';
+import DriverManagement from './DriverManagement';
+import EditDriverDialog from '../components/EditDriverDialog';
+import DriversComponent from '../components/DriversComponent';
 
 const Header = () => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -47,6 +50,9 @@ const Header = () => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState(null);
+  const [isDriversComponentOpen, setIsDriversComponentOpen] = useState(false);
+  const [isDriversDialogOpen, setIsDriversDialogOpen] = useState(false);
+  const [isEditDriverDialogOpen, setIsEditDriverDialogOpen] = useState(false);
 
 
   const customColors = {
@@ -97,7 +103,7 @@ const Header = () => {
   };
 
   const handleCloseEditDialog = () => {
-    setIsEditDialogOpen(false); // Close the edit dialog
+    setIsEditDialogOpen(false);    // Close the edit dialog
     setSelectedDriver(null);    // Reset the selected driver's data
   };
 
@@ -293,6 +299,19 @@ const Header = () => {
     return phoneNumberPattern.test(phoneNumber);
   };
 
+  const handleUpdateDriver = async () => {
+    try {
+      // Assuming you have an endpoint to update driver details
+      const response = await axios.put(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/drivers/${selectedDriver._id}`, selectedDriver);
+      alert('Driver details updated successfully!');
+      setIsEditDialogOpen(false); // Close the edit dialog after updating
+      fetchDrivers();
+    } catch (error) {
+      console.error("Error updating driver details:", error);
+      alert('Error updating driver details. Please try again.');
+    }
+  };
+
   const handleUpdateClick = () => {
     // Fetch current values here and populate profileData
     // For demonstration purposes, I'm using dummy data
@@ -418,16 +437,14 @@ const Header = () => {
   const [error, setError] = useState(null);
 
   const fetchDrivers = async () => {
-    setLoading(true);
     try {
-      const response = await fetch('/path-to-fetch-all-drivers-endpoint');
-      const data = await response.json();
-      setDrivers(data);
-    } catch (err) {
-      setError('Failed to fetch drivers.');
-      console.error('Error fetching drivers:', err);
-    } finally {
-      setLoading(false);
+      const response = await axios.get('https://us-central1-maristhungerexpress.cloudfunctions.net/api/drivers');
+      setDrivers(response.data);
+      setIsDriverDropdownOpen(true);
+      setIsEditDialogOpen(true);
+    } catch (error) {
+      console.error("Error fetching drivers:", error);
+      alert('Error fetching drivers. Please try again.');
     }
   };
 
@@ -455,33 +472,30 @@ const Header = () => {
     }
   };
 
-  const handleEditDriverClick = () => {
-    setIsLicensePlateDialogOpen(true);
+  const handleDriverSelection = (driver) => {
+    setSelectedDriver(driver);
+    setIsEditDialogOpen(true); // Open the edit dialog
   };
-  const handleEditDriver = async (editedVehicle) => {
-    try {
-      const response = await fetch(`YOUR_API_ENDPOINT`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(editedVehicle)
-      });
-      if (response.ok) {
-        alert('Driver details updated successfully!');
-        setIsAddVehicleDialogOpen(false);
-      } else {
-        alert('Error updating driver details. Please try again.');
-      }
-    } catch (error) {
-      console.error("Error updating driver details:", error);
-      alert('Error updating driver details. Please try again.');
-    }
+
+  const handleEditDrivers = () => {
+    // Logic to open the EditDriverDialog
+    setIsEditDriverDialogOpen(true); // Assuming you have a state to control the dialog visibility
   };
+  // Function to open the edit dialog with the selected driver
+  const openEditDriverDialog = (driver) => {
+    setSelectedDriver(driver);
+    setIsEditDriverDialogOpen(true);
+  };
+
+  const closeEditDriverDialog = () => {
+    setIsEditDriverDialogOpen(false);
+    setSelectedDriver(null);
+  };
+
 
   const handleSearchDriver = () => {
     // Fetch the driver details based on the license plate
-    const driverDetails = "Place Holder " //mockFetchDriverByLicensePlate(searchLicensePlate);
+    const driverDetails = drivers;
 
     if (driverDetails) {
       // Populate the vehicle state with the fetched details
@@ -573,19 +587,6 @@ const Header = () => {
                 </Button>
               )
             }
-            {/* {isMyOrdersOpen && (
-              <ul className={`dropdown-menu ${isMyOrdersOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
-                <li>
-                  <Button>Recent Order</Button>
-                </li>
-                <li>
-                  <button onClick={() => {
-                    debugger;
-                    navigate('/order-history')
-                  }}>Order History</button>
-                </li>
-              </ul>
-            )} */}
           </div>
           <Box className="restaurant-dropdown" ref={dropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
             {
@@ -665,46 +666,36 @@ const Header = () => {
                 <li>
                   <Button onClick={handleAddDriver}>Add Driver</Button>
                 </li>
-                <div>
-                  <button onClick={fetchDrivers}>Edit Driver</button>
-                  <ul>
-                    {drivers.map(driver => (
-                      <li key={driver._id} onClick={() => handleDriverClick(driver)}>
-                        {driver.name}
-                      </li>
-                    ))}
-                  </ul>
-                  {isEditDialogOpen && (
-                    <div className="edit-driver-dialog">
-                      <h3>Edit Driver</h3>
-                      {/* Assuming you have a form or input fields to edit the driver's details */}
-                      <input
-                        type="text"
-                        value={selectedDriver ? selectedDriver.name : ''}
-                        onChange={(e) => setSelectedDriver(prev => ({ ...prev, name: e.target.value }))}
-                      />
-                      {/* Add other input fields for other driver details */}
-                      <button onClick={handleCloseEditDialog}>Close</button>
-                    </div>
-                  )}
-                </div>
+                <li>
+                  <Button onClick={fetchDrivers}>Edit Drivers</Button>
+                </li>
                 <li>
                   <Button onClick={handleDeleteDriver}>Delete Driver</Button>
                 </li>
               </ul>
             )}
-          </Box>
-
+          </Box> {/* Make sure this closing tag is present */}
+          <EditDriverDialog
+            isOpen={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            driver={selectedDriver}
+            onSave={(updatedDriver) => {
+              // Logic to save the updated driver
+            }}
+          />
           {/* Add Vehicle Dialog */}
           {isAddVehicleDialogOpen && (
             <AddVehicleDialog
               onClose={() => setIsAddVehicleDialogOpen(false)}
               onSave={(vehicleData) => {
                 // Handle the logic to save the vehicle data here
-                console.log(vehicleData);
                 setIsAddVehicleDialogOpen(false);
               }}
             />
+          )}
+          {/* Drivers Dialog */}
+          {isDriversDialogOpen && (
+            <DriversComponent onClose={() => setIsDriversDialogOpen(false)} />
           )}
           <Box className="profile-dropdown" ref={profileDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
             <Button
@@ -764,7 +755,7 @@ const Header = () => {
             )
           }
         </Toolbar>
-      </AppBar>
+      </AppBar >
       <Dialog open={isCartDialogOpen} onClose={() => setIsCartDialogOpen(false)}>
         <DialogTitle>Shopping Cart</DialogTitle>
         <DialogContent>

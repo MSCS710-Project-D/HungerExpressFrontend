@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
-    Select, MenuItem, FormControl, InputLabel, Accordion, AccordionSummary, 
-    AccordionDetails, Typography, Avatar 
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+    Select, MenuItem, FormControl, InputLabel, Accordion, AccordionSummary,
+    AccordionDetails, Typography, Avatar
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useSelector } from 'react-redux';
@@ -28,12 +28,26 @@ const OrderHistory = () => {
     useEffect(() => {
         if (user && user._id) {
             fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/history/${user._id}`)
+                .then(res => res.json())
+                .then(data => {
+                    setOrders(data);
+                });
+        }
+    }, [user]);
+
+    // // Function to fetch orders
+    const fetchOrders = () => {
+        if (user && user._id) {
+            fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/history/${user._id}`)
             .then(res => res.json())
             .then(data => {
                 setOrders(data);
+            })
+            .catch(error => {
+                console.error('Failed to fetch orders:', error);
             });
         }
-    }, [user]);
+    };
 
     useEffect(() => {
         setFilteredOrders(orders.filter(order =>
@@ -41,9 +55,16 @@ const OrderHistory = () => {
         ).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)));
     }, [filterStatus, orders]);
 
+    // UseEffect for initial fetch and setting up polling
+    useEffect(() => {
+        fetchOrders(); // Initial fetch
+        const intervalId = setInterval(fetchOrders, 5000); // Set up polling every 5 seconds
+        return () => clearInterval(intervalId); // Clear interval on component unmount
+    }, [user]);
+
     const generatePDF = (order) => {
         const element = document.createElement('div');
-            let orderItemsTable = `
+        let orderItemsTable = `
             <table border="1" cellspacing="0" cellpadding="5">
                 <thead>
                     <tr>
@@ -55,7 +76,7 @@ const OrderHistory = () => {
                 </thead>
                 <tbody>
         `;
-    
+
         order.order_items.forEach(item => {
             orderItemsTable += `
                 <tr>
@@ -66,9 +87,9 @@ const OrderHistory = () => {
                 </tr>
             `;
         });
-    
+
         orderItemsTable += `</tbody></table>`;
-    
+
         element.innerHTML = `
             <h2 style="color: #FF5733; text-shadow: 2px 2px #33FF57;">Hunger Express</h2>
             <h3>Invoice for Order: ${order._id}</h3>
@@ -87,38 +108,38 @@ const OrderHistory = () => {
         };
         html2pdf().from(element).set(opt).save();
     }
-    
+
     const handleCancelClick = async (event, order) => {
         event.stopPropagation();
-    
+
         const { _id: orderId } = order;
-    
+
         if (!orderId) {
             console.error('Order ID is undefined. Cannot proceed with the update.');
             alert('Error: Unable to cancel the order due to missing order ID.');
             return;
         }
-    
+
         try {
             const updatedOrderData = {
                 orderId,
                 orderData: { order_status: 'Canceled' }
             };
             await dispatch(updateOrder(updatedOrderData));
-    
+
             // Update local state to reflect the change
-            const updatedOrders = orders.map(o => 
+            const updatedOrders = orders.map(o =>
                 o._id === orderId ? { ...o, order_status: 'Canceled' } : o
             );
             setOrders(updatedOrders);
-    
+
             alert('Order has been successfully canceled.');
         } catch (error) {
             console.error('Failed to cancel the order:', error);
             alert('Error: Failed to cancel the order. Please try again.');
         }
     };
-    
+
 
     // Helper function to check if the order is older than 30 minutes
     const isOrderOlderThan30Mins = (orderDate) => {
@@ -132,25 +153,25 @@ const OrderHistory = () => {
 
     return (
         <div style={{ width: '100%', overflowX: 'auto' }}>
-        <FormControl variant="outlined" style={{ marginBottom: '20px' }}>
-        <InputLabel id="order-status-label">Order Status</InputLabel>
-        <Select
-          labelId="order-status-label"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          label="Order Status"
-          style={{ width: '200px' }}
-        >
-          <MenuItem value="">
-            <em>All</em>
-          </MenuItem>
-          {['Placed', 'In Progress', 'Completed', 'Canceled'].map(status => (
-            <MenuItem key={status} value={status}>{status}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+            <FormControl variant="outlined" style={{ marginBottom: '20px' }}>
+                <InputLabel id="order-status-label">Order Status</InputLabel>
+                <Select
+                    labelId="order-status-label"
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    label="Order Status"
+                    style={{ width: '200px' }}
+                >
+                    <MenuItem value="">
+                        <em>All</em>
+                    </MenuItem>
+                    {['Placed', 'In Progress', 'Completed', 'Canceled'].map(status => (
+                        <MenuItem key={status} value={status}>{status}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
 
-      {filteredOrders.map((order) => (
+            {filteredOrders.map((order) => (
                 <Accordion key={order._id} expanded={expandedOrderId === order._id} onChange={() => setExpandedOrderId(expandedOrderId !== order._id ? order._id : null)}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Table style={{ tableLayout: 'fixed', width: '100%' }}>
@@ -162,16 +183,16 @@ const OrderHistory = () => {
                                     <TableCell>${order.total_price.toFixed(2)}</TableCell>
                                     <TableCell align="right">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <Button 
-                                                variant="contained" 
-                                                color="primary" 
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
                                                 onClick={() => generatePDF(order)}
                                             >
                                                 Download Invoice
                                             </Button>
-                                            <Button 
-                                                variant="contained" 
-                                                color="secondary" 
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
                                                 disabled={isOrderOlderThan30Mins(order.order_date) || order.order_status === 'Canceled'}
                                                 onClick={(event) => handleCancelClick(event, order)}
                                             >

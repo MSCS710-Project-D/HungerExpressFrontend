@@ -22,29 +22,6 @@ const AddVehicleDialog = ({ onClose, onSave }) => {
         onClose();
     };
 
-    const [drivers, setDrivers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    const fetchDrivers = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('/path-to-fetch-all-drivers-endpoint');
-            const data = await response.json();
-            setDrivers(data);
-        } catch (err) {
-            setError('Failed to fetch drivers.');
-            console.error('Error fetching drivers:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchDrivers();
-    }, []);
-
-
     return (
         <div className="vehicle-dialog-overlay">
             <div className="vehicle-dialog">

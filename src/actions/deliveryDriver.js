@@ -27,3 +27,33 @@ export const saveDriver = async (driverData) => {
 };
 
 
+/**
+ * Updates a driver's details.
+ * @param {string} driverId - The ID of the driver to update.
+ * @param {Object} updatedData - The updated data for the driver.
+ * @returns {Promise<Response>} - The response from the fetch call.
+ */
+export const updateDriver = async (driverId, updatedData) => {
+    try {
+      const response = await fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/drivers/update/${driverId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include other headers as needed, like authorization tokens
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      if (!response.ok) {
+        // If the server response is not ok, throw an error with the status
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json(); // Assuming the server responds with JSON
+      return data; // This could be the updated driver object, a success message, etc.
+    } catch (error) {
+      console.error('Error updating driver:', error);
+      throw error; // Rethrow the error so it can be handled by the caller
+    }
+  };
+
