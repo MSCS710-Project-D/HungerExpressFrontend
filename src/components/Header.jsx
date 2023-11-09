@@ -436,12 +436,13 @@ const Header = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDrivers = async () => {
+  const fetchDrivers = async (edit) => {
     try {
       const response = await axios.get('https://us-central1-maristhungerexpress.cloudfunctions.net/api/drivers');
       setDrivers(response.data);
       setIsDriverDropdownOpen(true);
-      setIsEditDialogOpen(true);
+
+      if (edit) setIsEditDialogOpen(true);
     } catch (error) {
       console.error("Error fetching drivers:", error);
       alert('Error fetching drivers. Please try again.');
@@ -667,20 +668,21 @@ const Header = () => {
                   <Button onClick={handleAddDriver}>Add Driver</Button>
                 </li>
                 <li>
-                  <Button onClick={fetchDrivers}>Edit Drivers</Button>
+                  <Button onClick={() => {fetchDrivers(true)}}>Edit Drivers</Button>
                 </li>
-                <li>
+                {/* <li>
                   <Button onClick={handleDeleteDriver}>Delete Driver</Button>
-                </li>
+                </li> */}
               </ul>
             )}
           </Box> {/* Make sure this closing tag is present */}
           <EditDriverDialog
             isOpen={isEditDialogOpen}
             onClose={() => setIsEditDialogOpen(false)}
-            driver={selectedDriver}
-            onSave={(updatedDriver) => {
-              // Logic to save the updated driver
+            driver={drivers}
+            onSave={() => {
+              setIsEditDialogOpen(false)
+            //  fetchDrivers();
             }}
           />
           {/* Add Vehicle Dialog */}

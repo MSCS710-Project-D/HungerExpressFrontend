@@ -149,7 +149,8 @@ function Checkout() {
             console.log(resp);
             localStorage.setItem('order', JSON.stringify(resp));
             var test = resp;
-            
+
+           
             // Show confetti and success message upon successful dispatch
             setShowSuccess(true);
 

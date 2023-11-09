@@ -28,6 +28,8 @@ const Home = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+            }).then(() => {
+                localStorage.removeItem('order');
             })
             
         }
