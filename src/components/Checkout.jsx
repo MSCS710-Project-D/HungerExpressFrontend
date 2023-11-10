@@ -5,6 +5,9 @@ import { Paper, Grid, TextField, FormControlLabel, Checkbox, Button, FormControl
 import '../styles/Checkout.scss';
 import Confetti from 'react-confetti';
 import { useAddress } from './AddressContext';
+import { Table, TableBody, TableCell, TableHead, TableRow, Avatar } from '@mui/material';
+import Typography from '@mui/material/Typography';
+
 
 function Checkout() {
     const dispatch = useDispatch();
@@ -13,6 +16,8 @@ function Checkout() {
     const { savedAddresses } = useAddress();
     const [selectedAddress, setSelectedAddress] = useState("None");
 
+    const [couponCode, setCouponCode] = useState('');
+    const [discount, setDiscount] = useState(0);
 
     const [deliveryAddress, setDeliveryAddress] = useState({
         firstName: '',
@@ -94,6 +99,20 @@ function Checkout() {
             ...deliveryAddress,
             [e.target.name]: e.target.value
         });
+    };
+
+    const handleApplyCoupon = () => {
+        if (couponCode === '50OFF') {
+            setDiscount(order.order.total_price * 0.5); // 50% discount
+        } else {
+            setDiscount(0);
+            alert('Invalid coupon code');
+        }
+    };
+
+    const calculateTotalWithDiscount = () => {
+        const total = calculateTax(deliveryAddress.state, order.order.total_price);
+        return total - discount;
     };
 
     const handleAddressSelection = (e) => {
@@ -182,7 +201,7 @@ function Checkout() {
             'Wyoming': 0.04,
             'District of Columbia': 0.06
         };
-        
+
         const taxRate = taxRates[state] || 0; // Default to 0 if state not found
         return total + (total * taxRate);
     };
@@ -191,8 +210,10 @@ function Checkout() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const totalWithTax = calculateTax(deliveryAddress.state, order.order.total_price);
-    
+        // const totalWithTax = calculateTax(deliveryAddress.state, order.order.total_price);
+        const totalWithDiscount = calculateTotalWithDiscount();
+
+
         const deliveryString = Object.values(deliveryAddress).join(', ');
         const billingString = useDeliveryForBilling ? deliveryString : Object.values(billingAddress).join(', ');
 
@@ -203,7 +224,7 @@ function Checkout() {
                 ...order.order,
                 delivery_address: deliveryString,
                 billing_address: billingString,
-                total_price: totalWithTax 
+                total_price: totalWithDiscount
             }
         };
         // // Conditionally add payment_info only if needed
@@ -237,196 +258,261 @@ function Checkout() {
             });
     };
 
-    
-    
+
+
     return (
         <div className="checkout-container">
             <h2>Checkout</h2>
-            <FormControl variant="outlined" sx={{ width: '250px', marginBottom: '20px' }}>
-                <InputLabel id="saved-address-label">Select a Saved Address</InputLabel>
-                <Select
-                    labelId="saved-address-label"
-                    label="Select a Saved Address"
-                    onChange={handleAddressSelection}
-                    value={selectedAddress}
-                >
-                    <MenuItem value="None">
-                        <em>None</em>
-                    </MenuItem>
-                    {savedAddresses.map((address, index) => (
-                        <MenuItem key={index} value={index}>
-                            {address.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-            <Paper elevation={3} className="checkout-paper">
-                <form onSubmit={handleSubmit}>
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={6}>
-                            <h3>Delivery Address</h3>
-                            <TextField
-                                className="mui-text-field"
-                                label="First Name"
-                                name="firstName"
-                                value={deliveryAddress.firstName}
-                                onChange={handleDeliveryChange}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Last Name"
-                                name="lastName"
-                                value={deliveryAddress.lastName}
-                                onChange={handleDeliveryChange}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Address Line 1"
-                                name="address1"
-                                value={deliveryAddress.address1}
-                                onChange={handleDeliveryChange}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Address Line 2"
-                                name="address2"
-                                value={deliveryAddress.address2}
-                                onChange={handleDeliveryChange}
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="City"
-                                name="city"
-                                value={deliveryAddress.city}
-                                onChange={handleDeliveryChange}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Zip Code"
-                                name="zipCode"
-                                value={deliveryAddress.zipCode}
-                                onChange={handleDeliveryChange}
-                                required
-                            />
-                            <Select
-                                label="State"
-                                name="state"
-                                value={deliveryAddress.state}
-                                onChange={handleDeliveryChange}
-                                required  
-                                sx={{ width: '300px' }} // Set the width here
-                            >
-                                {US_STATES.map((state, index) => (
-                                    <MenuItem key={index} value={state}>{state}</MenuItem>
-                                ))}
-                            </Select>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={useDeliveryForBilling}
-                                        onChange={(e) => setUseDeliveryForBilling(e.target.checked)}
-                                    />
+
+                {/* Display Cart Items */}
+                {order?.orderItems?.length ? (
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Image</TableCell>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Quantity</TableCell>
+                                <TableCell>Price</TableCell>
+                                <TableCell>Subtotal</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {order.orderItems.map((item, index) => {
+                                const itemId = item?._id;
+                                if (!itemId) {
+                                    console.warn("Unexpected item structure:", item);
+                                    return null;
                                 }
-                                label="Use Delivery Address as Billing Address"
-                            />
-                            <h3>Billing Address</h3>
-                            <TextField
-                                className="mui-text-field"
-                                label="First Name"
-                                name="firstName"
-                                value={billingAddress.firstName}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Last Name"
-                                name="lastName"
-                                value={billingAddress.lastName}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Address Line 1"
-                                name="address1"
-                                value={billingAddress.address1}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Address Line 2"
-                                name="address2"
-                                value={billingAddress.address2}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="City"
-                                name="city"
-                                value={billingAddress.city}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                                required
-                            />
-                            <TextField
-                                className="mui-text-field"
-                                label="Zip Code"
-                                name="zipCode"
-                                value={billingAddress.zipCode}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                                required
-                            />
-                            <Select
-                                label="State"
-                                name="state"
-                                value={billingAddress.state}
-                                onChange={handleBillingChange}
-                                disabled={useDeliveryForBilling}
-                                required
-                                sx={{ width: '300px' }} // Set the width here
 
-                            >
-                                {US_STATES.map((state, index) => (
-                                    <MenuItem key={index} value={state}>{state}</MenuItem>
-                                ))}
-                            </Select>
+                                return (
+                                    <TableRow key={itemId}>
+                                        <TableCell>
+                                            {item.image_url ? (
+                                                <img src={item.image_url} alt={item.name} style={{ width: '50px', height: '50px' }} />
+                                            ) : (
+                                                <Avatar variant="square">N/A</Avatar>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{item.name}</TableCell>
+                                        <TableCell>{item.quantity}</TableCell>
+                                        <TableCell>${item.price}</TableCell>
+                                        <TableCell>${item.subtotal}</TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                            <TableRow>
+                                <TableCell colSpan={4} align="right">Total:</TableCell>
+                                <TableCell>${order.order.total_price}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <Typography variant="body1">Your cart is empty.</Typography>
+                )}
+
+                <FormControl variant="outlined" sx={{ width: '250px', marginBottom: '20px' }}>
+                    <InputLabel id="saved-address-label">Select a Saved Address</InputLabel>
+                    <Select
+                        labelId="saved-address-label"
+                        label="Select a Saved Address"
+                        onChange={handleAddressSelection}
+                        value={selectedAddress}
+                    >
+                        <MenuItem value="None">
+                            <em>None</em>
+                        </MenuItem>
+                        {savedAddresses.map((address, index) => (
+                            <MenuItem key={index} value={index}>
+                                {address.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <Paper elevation={3} className="checkout-paper">
+                    <form onSubmit={handleSubmit}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} md={6}>
+                                <h3>Delivery Address</h3>
+                                <TextField
+                                    className="mui-text-field"
+                                    label="First Name"
+                                    name="firstName"
+                                    value={deliveryAddress.firstName}
+                                    onChange={handleDeliveryChange}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Last Name"
+                                    name="lastName"
+                                    value={deliveryAddress.lastName}
+                                    onChange={handleDeliveryChange}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Address Line 1"
+                                    name="address1"
+                                    value={deliveryAddress.address1}
+                                    onChange={handleDeliveryChange}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Address Line 2"
+                                    name="address2"
+                                    value={deliveryAddress.address2}
+                                    onChange={handleDeliveryChange}
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="City"
+                                    name="city"
+                                    value={deliveryAddress.city}
+                                    onChange={handleDeliveryChange}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Zip Code"
+                                    name="zipCode"
+                                    value={deliveryAddress.zipCode}
+                                    onChange={handleDeliveryChange}
+                                    required
+                                />
+                                <Select
+                                    label="State"
+                                    name="state"
+                                    value={deliveryAddress.state}
+                                    onChange={handleDeliveryChange}
+                                    required
+                                    sx={{ width: '300px' }} // Set the width here
+                                >
+                                    {US_STATES.map((state, index) => (
+                                        <MenuItem key={index} value={state}>{state}</MenuItem>
+                                    ))}
+                                </Select>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={useDeliveryForBilling}
+                                            onChange={(e) => setUseDeliveryForBilling(e.target.checked)}
+                                        />
+                                    }
+                                    label="Use Delivery Address as Billing Address"
+                                />
+                                <h3>Billing Address</h3>
+                                <TextField
+                                    className="mui-text-field"
+                                    label="First Name"
+                                    name="firstName"
+                                    value={billingAddress.firstName}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Last Name"
+                                    name="lastName"
+                                    value={billingAddress.lastName}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Address Line 1"
+                                    name="address1"
+                                    value={billingAddress.address1}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Address Line 2"
+                                    name="address2"
+                                    value={billingAddress.address2}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="City"
+                                    name="city"
+                                    value={billingAddress.city}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                    required
+                                />
+                                <TextField
+                                    className="mui-text-field"
+                                    label="Zip Code"
+                                    name="zipCode"
+                                    value={billingAddress.zipCode}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                    required
+                                />
+                                <Select
+                                    label="State"
+                                    name="state"
+                                    value={billingAddress.state}
+                                    onChange={handleBillingChange}
+                                    disabled={useDeliveryForBilling}
+                                    required
+                                    sx={{ width: '300px' }} // Set the width here
+
+                                >
+                                    {US_STATES.map((state, index) => (
+                                        <MenuItem key={index} value={state}>{state}</MenuItem>
+                                    ))}
+                                </Select>
+                            </Grid>
                         </Grid>
-                    </Grid>
 
-                    <h3>Payment Method</h3>
-                    <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                        <option value="cash">Cash on Delivery</option>
-                        <option value="paypal">PayPal</option>
-                    </select>
+                        <h3>Payment Method</h3>
+                        <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+                            <option value="cash">Cash on Delivery</option>
+                            <option value="paypal">PayPal</option>
+                        </select>
 
-                    {paymentMethod === 'paypal' && (
-                        <div ref={paypalRef}></div>
-                    )}
+                        {paymentMethod === 'paypal' && (
+                            <div ref={paypalRef}></div>
+                        )}
 
-                    <Button type="submit" variant="contained" color="primary" className="place-order-button">Place Order</Button>
-                </form>
-            </Paper>
-            {showSuccess && (
-                <>
-                    <Confetti />
-                    <div className="success-message">Order created successfully!</div>
-                </>
-            )}
-        </div>
-    );
+                        {/* Coupon Code Section */}
+                        <div className="coupon-section">
+                            <TextField
+                                label="Coupon Code"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value)}
+                                placeholder="Enter coupon code"
+                            />
+                            <Button onClick={handleApplyCoupon}>Apply Coupon</Button>
+                        </div>
+
+                        {/* Display Total Amount */}
+                        <div className="total-amount">
+                            <p>Total before discount: ${calculateTax(deliveryAddress.state, order.order.total_price).toFixed(2)}</p>
+                            <p>Discount: ${discount.toFixed(2)}</p>
+                            <p>Total after discount: ${calculateTotalWithDiscount().toFixed(2)}</p>
+                        </div>
+                        <Button type="submit" variant="contained" color="primary" className="place-order-button">Place Order</Button>
+                    </form>
+                </Paper>
+
+                {showSuccess && (
+                    <>
+                        <Confetti />
+                        <div className="success-message">Order created successfully!</div>
+                    </>
+                )}
+            </div>
+            );
 }
 
-export default Checkout;
+            export default Checkout;

@@ -243,17 +243,23 @@ const OrderHistory = () => {
                                             <TableCell>${item.subtotal.toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))}
-                                    <TableRow>
+                                   <TableRow>
                                         <TableCell colSpan={3} align="right">Subtotal:</TableCell>
                                         <TableCell>${order.order_items.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2)}</TableCell>
                                     </TableRow>
+                                    {order.discount && (
+                                        <TableRow>
+                                            <TableCell colSpan={3} align="right">Discount:</TableCell>
+                                            <TableCell>-${order.discount.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    )}
                                     <TableRow>
                                         <TableCell colSpan={3} align="right">Tax:</TableCell>
-                                        <TableCell>${((order.total_price - order.order_items.reduce((acc, item) => acc + item.subtotal, 0)).toFixed(2))}</TableCell>
+                                        <TableCell>${((order.total_price - order.order_items.reduce((acc, item) => acc + item.subtotal, 0) - (order.discount || 0)).toFixed(2))}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={3} align="right"><strong>Total Price:</strong></TableCell>
-                                        <TableCell><strong>${order.total_price.toFixed(2)}</strong></TableCell>
+                                        <TableCell><strong>${(order.total_price - (order.discount || 0)).toFixed(2)}</strong></TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
