@@ -9,6 +9,15 @@ export const createOrder = createAsyncThunk('order/createOrder', async (orderDat
   return response.data;
 });
 
+export const fetchAllOrders = () => async (dispatch) => {
+  try {
+    const response = await axios.get('https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders');
+    dispatch({ type: 'FETCH_ALL_ORDERS_SUCCESS', payload: response.data });
+  } catch (error) {
+    console.error(error.response);
+  }
+}
+
 export const getAllOrders = createAsyncThunk('order/getAllOrders', async () => {
   const response = await axios.get("/orders/");
   return response.data;

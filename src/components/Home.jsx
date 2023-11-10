@@ -14,24 +14,22 @@ const Home = () => {
 
 
     useEffect(() => {
-
-        const order = localStorage.getItem('order');
-
-        if (order) {
-            const parsedOrder = JSON.parse(order);
-            const _id = parsedOrder.payload._id
-
-            console.log('TESTTTTTT', _id);
-
-            fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/process/${_id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then(() => {
-                localStorage.removeItem('order');
-            })
-            
+        const orderString = localStorage.getItem('order');
+        if (orderString) {
+            const parsedOrder = JSON.parse(orderString);
+            if (parsedOrder && parsedOrder.payload && parsedOrder.payload._id) {
+                const _id = parsedOrder.payload._id;
+                console.log('TESTTTTTT', _id);
+    
+                fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/process/${_id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }).then(() => {
+                    localStorage.removeItem('order');
+                });
+            }
         }
         const loadRestaurants = async () => {
             const data = await fetchRestaurants();

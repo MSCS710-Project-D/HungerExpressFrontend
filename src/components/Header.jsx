@@ -23,6 +23,8 @@ import axios from 'axios';
 import DriverManagement from './DriverManagement';
 import EditDriverDialog from '../components/EditDriverDialog';
 import DriversComponent from '../components/DriversComponent';
+import { fetchAllOrders } from '../actions/order'; 
+import AdminOrders from '../components/AdminOrders'; 
 
 const Header = () => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -98,13 +100,18 @@ const Header = () => {
   });
 
   const handleDriverClick = (driver) => {
-    setSelectedDriver(driver);  // Set the clicked driver's data
-    setIsEditDialogOpen(true); // Open the edit dialog
+    setSelectedDriver(driver); 
+    setIsEditDialogOpen(true);
   };
 
   const handleCloseEditDialog = () => {
-    setIsEditDialogOpen(false);    // Close the edit dialog
-    setSelectedDriver(null);    // Reset the selected driver's data
+    setIsEditDialogOpen(false);   
+    setSelectedDriver(null);   
+  };
+
+  const handleAllOrdersNavigation = () => {
+    navigate('/allOrders'); 
+    dispatch(fetchAllOrders());
   };
 
   const dropdownRef = useRef(null);
@@ -545,7 +552,6 @@ const Header = () => {
               Search
             </Button>
           </Box>
-
           <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
             {
               user?.user_type !== 'admin' && (
@@ -646,7 +652,30 @@ const Header = () => {
           >
             Change Password
           </Button>
+          {
+            user?.user_type === 'admin' && (
+              <Button
+                color="inherit"
+                style={{
+                  marginRight: '10px',
+                  borderRadius: '4px',
+                  backgroundColor: customColors.secondary,
+                  transition: 'background-color 0.3s ease',
+                  color: 'white'
+                }}
+                onClick={handleAllOrdersNavigation}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#1976D2';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = customColors.secondary;
+                }}
+              >
+                All Orders
+              </Button>
 
+            )
+          }
           {/* Delivery Driver dropdown */}
           <Box className="driver-dropdown" ref={driverDropdownRef} style={{ position: 'relative', marginRight: '10px' }}>
             {
@@ -668,7 +697,7 @@ const Header = () => {
                   <Button onClick={handleAddDriver}>Add Driver</Button>
                 </li>
                 <li>
-                  <Button onClick={() => {fetchDrivers(true)}}>Edit Drivers</Button>
+                  <Button onClick={() => { fetchDrivers(true) }}>Edit Drivers</Button>
                 </li>
                 {/* <li>
                   <Button onClick={handleDeleteDriver}>Delete Driver</Button>
@@ -682,7 +711,7 @@ const Header = () => {
             driver={drivers}
             onSave={() => {
               setIsEditDialogOpen(false)
-            //  fetchDrivers();
+              //  fetchDrivers();
             }}
           />
           {/* Add Vehicle Dialog */}
