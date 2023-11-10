@@ -406,19 +406,7 @@ const Header = () => {
     };
   }, []);
 
-  const handleSearch = () => {
-    // Here, dispatch an action to your backend to search with the searchTerm
-    console.log('Searching for:', searchTerm);
-    fetch(`/search?q=${searchTerm}`)
-      .then((response) => response.json())
-      .then((data) => {
-        // Process and display the results
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching search results:', error);
-      });
-  };
+
 
   const handleUserIdChange = (newUserId) => {
     // Assuming user ID change is triggered by user action, e.g., input field change
@@ -539,43 +527,6 @@ const Header = () => {
                 Hunger Express
               </Typography>
             </Link>
-          </Box>
-          <Box mx={2} display="flex" alignItems="center">
-            <TextField
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
-              variant="outlined"
-              style={{ backgroundColor: 'white', width: '450px' }} // Adjust the width value as needed
-            />
-            <Button color="primary" variant="contained" onClick={handleSearch}>
-              Search
-            </Button>
-          </Box>
-          <Box className="order-food-dropdown" ref={orderFoodRef} style={{ position: 'relative' }}>
-            {
-              user?.user_type !== 'admin' && (
-                <Button
-                  color="inherit"
-                  onClick={() => setIsOrderFoodOpen(!isOrderFoodOpen)}
-                  style={dropdownButtonStyle}
-                  onMouseEnter={(e) => handleDropdownHover(e, '#1976D2')}
-                  onMouseLeave={(e) => handleDropdownHover(e, customColors.secondary)}
-                >
-                  Order Food {isOrderFoodOpen ? '▲' : '▼'}
-                </Button>
-              )
-            }
-            {isOrderFoodOpen && (
-              <ul className={`dropdown-menu ${isOrderFoodOpen ? 'show' : ''}`} style={{ position: 'absolute', top: '100%', left: '0' }}>
-                <li>
-                  <Button onClick={() => {/* Handle Search by Cuisines logic */ }}>Search by Cuisines</Button>
-                </li>
-                <li>
-                  <Button onClick={() => {/* Handle Search by Restaurants logic */ }}>Search by Restaurants</Button>
-                </li>
-              </ul>
-            )}
           </Box>
           <div ref={dropdownRef} style={{ position: 'relative' }}>
             {
