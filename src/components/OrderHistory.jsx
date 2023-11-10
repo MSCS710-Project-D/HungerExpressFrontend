@@ -39,13 +39,13 @@ const OrderHistory = () => {
     const fetchOrders = () => {
         if (user && user._id) {
             fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/history/${user._id}`)
-            .then(res => res.json())
-            .then(data => {
-                setOrders(data);
-            })
-            .catch(error => {
-                console.error('Failed to fetch orders:', error);
-            });
+                .then(res => res.json())
+                .then(data => {
+                    setOrders(data);
+                })
+                .catch(error => {
+                    console.error('Failed to fetch orders:', error);
+                });
         }
     };
 
@@ -76,8 +76,10 @@ const OrderHistory = () => {
                 </thead>
                 <tbody>
         `;
-
+    
+        let subtotal = 0;
         order.order_items.forEach(item => {
+            subtotal += item.subtotal;
             orderItemsTable += `
                 <tr>
                     <td><img src="${item.image_url}" alt="${item.name}" width="50"></td>
@@ -87,9 +89,27 @@ const OrderHistory = () => {
                 </tr>
             `;
         });
-
-        orderItemsTable += `</tbody></table>`;
-
+    
+        const tax = order.total_price - subtotal;
+        orderItemsTable += `
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" align="right">Subtotal:</td>
+                    <td>$${subtotal.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" align="right">Tax:</td>
+                    <td>$${tax.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" align="right"><strong>Total Price:</strong></td>
+                    <td><strong>$${order.total_price.toFixed(2)}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        `;
+    
         element.innerHTML = `
             <h2 style="color: #FF5733; text-shadow: 2px 2px #33FF57;">Hunger Express</h2>
             <h3>Invoice for Order: ${order._id}</h3>
@@ -97,7 +117,6 @@ const OrderHistory = () => {
             <p>Status: ${order.order_status}</p>
             <p>Delivery Address: ${order.delivery_address}</p>
             ${orderItemsTable}
-            <p><strong>Total Price:</strong> $${order.total_price.toFixed(2)}</p>
         `;
         const opt = {
             margin: 10,
@@ -108,6 +127,7 @@ const OrderHistory = () => {
         };
         html2pdf().from(element).set(opt).save();
     }
+    
 
     const handleCancelClick = async (event, order) => {
         event.stopPropagation();
@@ -170,7 +190,6 @@ const OrderHistory = () => {
                     ))}
                 </Select>
             </FormControl>
-
             {filteredOrders.map((order) => (
                 <Accordion key={order._id} expanded={expandedOrderId === order._id} onChange={() => setExpandedOrderId(expandedOrderId !== order._id ? order._id : null)}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -200,7 +219,6 @@ const OrderHistory = () => {
                                             </Button>
                                         </div>
                                     </TableCell>
-
                                 </TableRow>
                             </TableBody>
                         </Table>
@@ -225,6 +243,18 @@ const OrderHistory = () => {
                                             <TableCell>${item.subtotal.toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))}
+                                    <TableRow>
+                                        <TableCell colSpan={3} align="right">Subtotal:</TableCell>
+                                        <TableCell>${order.order_items.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2)}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={3} align="right">Tax:</TableCell>
+                                        <TableCell>${((order.total_price - order.order_items.reduce((acc, item) => acc + item.subtotal, 0)).toFixed(2))}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={3} align="right"><strong>Total Price:</strong></TableCell>
+                                        <TableCell><strong>${order.total_price.toFixed(2)}</strong></TableCell>
+                                    </TableRow>
                                 </TableBody>
                             </Table>
                         </Typography>
