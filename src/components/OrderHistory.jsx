@@ -64,6 +64,7 @@ const OrderHistory = () => {
 
     const generatePDF = (order) => {
         const element = document.createElement('div');
+        
         let orderItemsTable = `
             <table border="1" cellspacing="0" cellpadding="5">
                 <thead>
@@ -90,7 +91,10 @@ const OrderHistory = () => {
             `;
         });
     
-        const tax = order.total_price - subtotal;
+        const discount = order.discount || 0;
+        const tax = calculateTaxForOrder(order);
+        const totalPrice = subtotal - discount + tax;
+    
         orderItemsTable += `
             </tbody>
             <tfoot>
@@ -99,12 +103,16 @@ const OrderHistory = () => {
                     <td>$${subtotal.toFixed(2)}</td>
                 </tr>
                 <tr>
+                    <td colspan="3" align="right">Discount:</td>
+                    <td>-$${discount.toFixed(2)}</td>
+                </tr>
+                <tr>
                     <td colspan="3" align="right">Tax:</td>
                     <td>$${tax.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td colspan="3" align="right"><strong>Total Price:</strong></td>
-                    <td><strong>$${order.total_price.toFixed(2)}</strong></td>
+                    <td><strong>$${totalPrice.toFixed(2)}</strong></td>
                 </tr>
             </tfoot>
         </table>
@@ -127,7 +135,7 @@ const OrderHistory = () => {
         };
         html2pdf().from(element).set(opt).save();
     }
-    
+
 
     const handleCancelClick = async (event, order) => {
         event.stopPropagation();
@@ -160,6 +168,20 @@ const OrderHistory = () => {
         }
     };
 
+
+    const calculateTaxForOrder = (order) => {
+        const subtotal = order.order_items.reduce((acc, item) => acc + item.subtotal, 0);
+        const discountedSubtotal = Math.max(subtotal - (order.discount || 0), 0); // Ensure subtotal doesn't go below zero
+        const taxRate = 0.1; // Assuming 10% tax rate, adjust as needed
+        return discountedSubtotal * taxRate;
+    };
+
+    const calculateTotalPriceForOrder = (order) => {
+        const subtotal = order.order_items.reduce((acc, item) => acc + item.subtotal, 0);
+        const discountedSubtotal = Math.max(subtotal - (order.discount || 0), 0); // Ensure subtotal doesn't go below zero
+        const tax = calculateTaxForOrder(order);
+        return discountedSubtotal + tax;
+    };
 
     // Helper function to check if the order is older than 30 minutes
     const isOrderOlderThan30Mins = (orderDate) => {
@@ -243,24 +265,23 @@ const OrderHistory = () => {
                                             <TableCell>${item.subtotal.toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))}
-                                   <TableRow>
+                                    <TableRow>
                                         <TableCell colSpan={3} align="right">Subtotal:</TableCell>
                                         <TableCell>${order.order_items.reduce((acc, item) => acc + item.subtotal, 0).toFixed(2)}</TableCell>
                                     </TableRow>
-                                    {order.discount && (
-                                        <TableRow>
-                                            <TableCell colSpan={3} align="right">Discount:</TableCell>
-                                            <TableCell>-${order.discount.toFixed(2)}</TableCell>
-                                        </TableRow>
-                                    )}
+                                    <TableRow>
+                                        <TableCell colSpan={3} align="right">Discount:</TableCell>
+                                        <TableCell>-${(order.discount ? order.discount.toFixed(2) : '0.00')}</TableCell>
+                                    </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={3} align="right">Tax:</TableCell>
-                                        <TableCell>${((order.total_price - order.order_items.reduce((acc, item) => acc + item.subtotal, 0) - (order.discount || 0)).toFixed(2))}</TableCell>
+                                        <TableCell>${(order.tax ? order.tax.toFixed(2) : '0.00')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={3} align="right"><strong>Total Price:</strong></TableCell>
-                                        <TableCell><strong>${(order.total_price - (order.discount || 0)).toFixed(2)}</strong></TableCell>
+                                        <TableCell><strong>${(order.total_price ? order.total_price.toFixed(2) : '0.00')}</strong></TableCell>
                                     </TableRow>
+
                                 </TableBody>
                             </Table>
                         </Typography>

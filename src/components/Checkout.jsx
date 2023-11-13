@@ -239,7 +239,7 @@ function Checkout() {
         const taxAmount = calculateTax(deliveryAddress.state, subtotal);
         return subtotal + taxAmount;
     };
-    
+
     const calculateTotalWithDiscount = () => {
         const subtotal = calculateTotalPrice();
         const taxAmount = calculateTax(deliveryAddress.state, subtotal);
@@ -251,11 +251,15 @@ function Checkout() {
 
 
     const handleSubmit = (e) => {
+
         e.preventDefault();
 
-        // const totalWithTax = calculateTax(deliveryAddress.state, order.order.total_price);
-        const totalWithDiscount = calculateTotalWithDiscount();
-        const taxAmount = calculateTax(deliveryAddress.state, order.order.total_price) - order.order.total_price;
+        const subtotal = calculateTotalPrice();
+        const taxAmount = calculateTax(deliveryAddress.state, subtotal);
+        const totalWithTax = subtotal + taxAmount;
+        const totalWithDiscount = totalWithTax - discount;
+
+        const finalTotal = totalWithDiscount >= 0 ? totalWithDiscount : 0;
 
         const deliveryString = Object.values(deliveryAddress).join(', ');
         const billingString = useDeliveryForBilling ? deliveryString : Object.values(billingAddress).join(', ');
@@ -267,14 +271,14 @@ function Checkout() {
                 ...order.order,
                 delivery_address: deliveryString,
                 billing_address: billingString,
-                total_price: totalWithDiscount,
+                total_price: finalTotal,
                 tax: taxAmount,
                 discount: discount
             }
         };
         // // Conditionally add payment_info only if needed
         if (paymentMethod === 'cash') {
-            newOrder.order.payment_info = { type: "COD", amount: order.order.total_price };
+            newOrder.order.payment_info = { type: "COD", amount: finalTotal };
         } else if (paypalDetails) {
             newOrder.order.payment_info = paypalDetails;
         }
