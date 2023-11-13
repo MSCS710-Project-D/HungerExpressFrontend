@@ -258,6 +258,7 @@ const OrderHistory = () => {
                                     <TableCell>{new Date(order.order_date).toLocaleString()}</TableCell>
                                     <TableCell>{order.order_status}</TableCell>
                                     <TableCell>{order.delivery_address}</TableCell>
+                                    <TableCell>{order.driver ? order.driver : "No Driver Assigned"}</TableCell>
                                     <TableCell>${order.total_price.toFixed(2)}</TableCell>
                                     <TableCell align="right">
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
