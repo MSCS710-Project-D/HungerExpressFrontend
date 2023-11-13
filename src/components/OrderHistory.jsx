@@ -64,7 +64,7 @@ const OrderHistory = () => {
 
     const generatePDF = (order) => {
         const element = document.createElement('div');
-        
+
         let orderItemsTable = `
             <table border="1" cellspacing="0" cellpadding="5">
                 <thead>
@@ -77,7 +77,7 @@ const OrderHistory = () => {
                 </thead>
                 <tbody>
         `;
-    
+
         let subtotal = 0;
         order.order_items.forEach(item => {
             subtotal += item.subtotal;
@@ -90,11 +90,11 @@ const OrderHistory = () => {
                 </tr>
             `;
         });
-    
+
         const discount = order.discount || 0;
         const tax = calculateTaxForOrder(order);
         const totalPrice = subtotal - discount + tax;
-    
+
         orderItemsTable += `
             </tbody>
             <tfoot>
@@ -117,7 +117,7 @@ const OrderHistory = () => {
             </tfoot>
         </table>
         `;
-    
+
         element.innerHTML = `
             <h2 style="color: #FF5733; text-shadow: 2px 2px #33FF57;">Hunger Express</h2>
             <h3>Invoice for Order: ${order._id}</h3>
@@ -140,12 +140,46 @@ const OrderHistory = () => {
     const handleCancelClick = async (event, order) => {
         event.stopPropagation();
 
-        const { _id: orderId } = order;
+        const { _id: orderId, order_date } = order;
 
         if (!orderId) {
             console.error('Order ID is undefined. Cannot proceed with the update.');
             alert('Error: Unable to cancel the order due to missing order ID.');
             return;
+        }
+
+        // Calculate the time difference in minutes
+        const timeDiff = (new Date().getTime() - new Date(order_date).getTime()) / 60000; // Convert milliseconds to minutes
+
+        let refundPercentage;
+        if (timeDiff < 1) {
+            refundPercentage = 90;
+        } else if (timeDiff < 2) {
+            refundPercentage = 80;
+        } else if (timeDiff < 3) {
+            refundPercentage = 70;
+        } else if (timeDiff < 4) {
+            refundPercentage = 60;
+        } else if (timeDiff < 5) {
+            refundPercentage = 50;
+        } else if (timeDiff < 6) {
+            refundPercentage = 40;
+        } else if (timeDiff < 7) {
+            refundPercentage = 30;
+        } else if (timeDiff < 8) {
+            refundPercentage = 20;
+        } else if (timeDiff < 9) {
+            refundPercentage = 10;
+        } else {
+            refundPercentage = 0; // No refund if more than 10 minutes
+        }
+
+        const refundAmount = (order.total_price * refundPercentage) / 100;
+
+        // Confirm cancellation and refund with the user
+        const confirmCancel = window.confirm(`Are you sure you want to cancel this order? You will receive a ${refundPercentage}% refund, amounting to $${refundAmount.toFixed(2)}.`);
+        if (!confirmCancel) {
+            return; // Stop if user does not confirm
         }
 
         try {
@@ -161,12 +195,15 @@ const OrderHistory = () => {
             );
             setOrders(updatedOrders);
 
-            alert('Order has been successfully canceled.');
+            // Update the alert message to include refund details
+            alert(`Order has been successfully canceled. You will receive a ${refundPercentage}% refund, amounting to $${refundAmount.toFixed(2)}.`);
+
         } catch (error) {
             console.error('Failed to cancel the order:', error);
             alert('Error: Failed to cancel the order. Please try again.');
         }
     };
+
 
 
     const calculateTaxForOrder = (order) => {
