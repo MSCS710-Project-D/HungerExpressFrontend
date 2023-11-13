@@ -16,6 +16,8 @@ const AdminOrders = () => {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const [drivers, setDrivers] = useState([]);
+  const [selectedDrivers, setSelectedDrivers] = useState({});
 
   const dispatch = useDispatch();
 
@@ -35,6 +37,62 @@ const AdminOrders = () => {
   useEffect(() => {
     fetchAllOrders(); // Fetch all orders on component mount
   }, []);
+
+  // Fetch drivers
+  const fetchDrivers = () => {
+    fetch('https://us-central1-maristhungerexpress.cloudfunctions.net/api/drivers')
+      .then(res => res.json())
+      .then(data => {
+        setDrivers(data);
+      })
+      .catch(error => {
+        console.error('Failed to fetch drivers:', error);
+      });
+  };
+
+  useEffect(() => {
+    fetchAllOrders();
+    fetchDrivers(); // Fetch drivers on component mount
+  }, []);
+
+  // Handle driver selection
+  const handleDriverSelect = async (orderId, driverId) => {
+    const selectedDriver = drivers.find(driver => driver._id === driverId);
+    if (!selectedDriver) {
+      console.error('Selected driver not found');
+      return;
+    }
+
+    const updatedOrderData = {
+      driver: selectedDriver.license_plate // Assuming you want to store the license plate
+    };
+
+    try {
+      const response = await fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/update/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedOrderData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update order with driver');
+      }
+
+      // Update local state to reflect the change
+      const updatedOrders = orders.map(order =>
+        order._id === orderId ? { ...order, driver: selectedDriver.license_plate } : order
+      );
+      setOrders(updatedOrders);
+
+      setSelectedDrivers(prev => ({ ...prev, [orderId]: driverId }));
+    } catch (error) {
+      console.error('Error updating order with driver:', error);
+      // Handle error (e.g., show a notification to the user)
+    }
+  };
+
 
   useEffect(() => {
     setFilteredOrders(orders.filter(order =>
@@ -131,20 +189,20 @@ const AdminOrders = () => {
 
   const handleStatusChange = async (event, orderId) => {
     const newStatus = event.target.value;
-  
+
     // Find the order to be updated
     const orderToUpdate = orders.find(order => order._id === orderId);
     if (!orderToUpdate) {
       console.error('Order not found');
       return;
     }
-  
+
     // Prepare the updated order payload
     const updatedOrderData = {
       ...orderToUpdate,
       order_status: newStatus
     };
-  
+
     try {
       // Make an API call to update the order
       const response = await fetch(`https://us-central1-maristhungerexpress.cloudfunctions.net/api/orders/update/${orderId}`, {
@@ -154,11 +212,11 @@ const AdminOrders = () => {
         },
         body: JSON.stringify(updatedOrderData)
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update order status');
       }
-  
+
       // Update the local state with the new order status
       const updatedOrders = orders.map(order =>
         order._id === orderId ? { ...order, order_status: newStatus } : order
@@ -169,7 +227,7 @@ const AdminOrders = () => {
       // Handle error (e.g., show a notification to the user)
     }
   };
-  
+
 
   return (
     <div style={{ width: '100%', overflowX: 'auto' }}>
@@ -191,7 +249,7 @@ const AdminOrders = () => {
         </Select>
       </FormControl>
 
-      
+
       {filteredOrders.map((order) => (
         <Accordion key={order._id} expanded={expandedOrderId === order._id} onChange={() => setExpandedOrderId(expandedOrderId !== order._id ? order._id : null)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -211,7 +269,23 @@ const AdminOrders = () => {
                         ))}
                       </Select>
                     </FormControl>
-                  </TableCell>                  <TableCell>{order.delivery_address}</TableCell>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl variant="outlined" size="small" disabled={!!selectedDrivers[order._id]}>
+                      <Select
+                        value={selectedDrivers[order._id] || ''}
+                        onChange={(e) => handleDriverSelect(order._id, e.target.value)}
+                        style={{ minWidth: 120 }}
+                      >
+                        {drivers.map(driver => (
+                          <MenuItem key={driver._id} value={driver._id}>
+                            {driver.vehicle_type} - {driver.license_plate}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                  <TableCell>{order.delivery_address}</TableCell>
                   <TableCell>${order.total_price.toFixed(2)}</TableCell>
                   <TableCell align="right">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
