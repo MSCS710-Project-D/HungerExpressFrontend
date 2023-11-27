@@ -14,6 +14,152 @@ import { updateOrder } from '../actions/order.js';
 import html2pdf from 'html2pdf.js';
 
 
+export const generatePDF = (order) => {
+    const element = document.createElement('div');
+
+    let orderItemsTable = `
+        <table border="1" cellspacing="0" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    let subtotal = 0;
+    order.order_items.forEach(item => {
+        subtotal += item.subtotal;
+        orderItemsTable += `
+            <tr>
+                <td><img src="${item.image_url}" alt="${item.name}" width="50"></td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>$${item.subtotal.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    const discount = order.discount || 0;
+    const tax = calculateTaxForOrder(order);
+    const totalPrice = subtotal - discount + tax;
+
+    orderItemsTable += `
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" align="right">Subtotal:</td>
+                <td>$${subtotal.toFixed(2)}</td>
+            </tr>
+            <tr>
+                <td colspan="3" align="right">Discount:</td>
+                <td>-$${discount.toFixed(2)}</td>
+            </tr>
+            <tr>
+                <td colspan="3" align="right">Tax:</td>
+                <td>$${tax.toFixed(2)}</td>
+            </tr>
+            <tr>
+                <td colspan="3" align="right"><strong>Total Price:</strong></td>
+                <td><strong>$${totalPrice.toFixed(2)}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+    `;
+
+    element.innerHTML = `
+        <h2 style="color: #FF5733; text-shadow: 2px 2px #33FF57;">Hunger Express</h2>
+        <h3>Invoice for Order: ${order._id}</h3>
+        <p>Date: ${new Date(order.order_date).toLocaleString()}</p>
+        <p>Status: ${order.order_status}</p>
+        <p>Delivery Address: ${order.delivery_address}</p>
+        ${orderItemsTable}
+    `;
+    const opt = {
+        margin: 10,
+        filename: `Invoice_${order._id}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().from(element).set(opt).save();
+}
+const calculateTaxForOrder = (order) => {
+    const subtotal = order.order_items.reduce((acc, item) => acc + item.subtotal, 0);
+    const discountedSubtotal = Math.max(subtotal - (order.discount || 0), 0); // Ensure subtotal doesn't go below zero
+    const taxRate = 0.1; // Assuming 10% tax rate, adjust as needed
+    return discountedSubtotal * taxRate;
+};
+export const handleCancelClick = async (event, order, dispatch, updateOrder, orders, setOrders) => {
+    event.stopPropagation();
+
+    const { _id: orderId, order_date } = order;
+
+    if (!orderId) {
+        console.error('Order ID is undefined. Cannot proceed with the update.');
+        alert('Error: Unable to cancel the order due to missing order ID.');
+        return;
+    }
+
+    // Calculate the time difference in minutes
+    const timeDiff = (new Date().getTime() - new Date(order_date).getTime()) / 60000; // Convert milliseconds to minutes
+
+    let refundPercentage;
+    if (timeDiff < 1) {
+        refundPercentage = 90;
+    } else if (timeDiff < 2) {
+        refundPercentage = 80;
+    } else if (timeDiff < 3) {
+        refundPercentage = 70;
+    } else if (timeDiff < 4) {
+        refundPercentage = 60;
+    } else if (timeDiff < 5) {
+        refundPercentage = 50;
+    } else if (timeDiff < 6) {
+        refundPercentage = 40;
+    } else if (timeDiff < 7) {
+        refundPercentage = 30;
+    } else if (timeDiff < 8) {
+        refundPercentage = 20;
+    } else if (timeDiff < 9) {
+        refundPercentage = 10;
+    } else {
+        refundPercentage = 0; // No refund if more than 10 minutes
+    }
+
+    const refundAmount = (order.total_price * refundPercentage) / 100;
+
+    // Confirm cancellation and refund with the user
+    const confirmCancel = window.confirm(`Are you sure you want to cancel this order? You will receive a ${refundPercentage}% refund, amounting to $${refundAmount.toFixed(2)}.`);
+    if (!confirmCancel) {
+        return; // Stop if user does not confirm
+    }
+
+    try {
+        const updatedOrderData = {
+            orderId,
+            orderData: { order_status: 'Canceled' }
+        };
+        await dispatch(updateOrder(updatedOrderData));
+
+        // Update local state to reflect the change
+        const updatedOrders = orders.map(o =>
+            o._id === orderId ? { ...o, order_status: 'Canceled' } : o
+        );
+        setOrders(updatedOrders);
+
+        // Update the alert message to include refund details
+        alert(`Order has been successfully canceled. You will receive a ${refundPercentage}% refund, amounting to $${refundAmount.toFixed(2)}.`);
+
+    } catch (error) {
+        console.error('Failed to cancel the order:', error);
+        alert('Error: Failed to cancel the order. Please try again.');
+    }
+};
+
 const OrderHistory = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [orders, setOrders] = useState([]);
@@ -22,8 +168,12 @@ const OrderHistory = () => {
     const [expandedOrderId, setExpandedOrderId] = useState(null);
     const [showToast, setShowToast] = useState(false);
     // const [isCancelled, setIsCancelled] = useState(order.status === "Canceled");
+    const dispatch = useDispatch(); // Call useDispatch at the top level
 
-    const dispatch = useDispatch();
+
+    const onHandleCancelClick = (event, order) => {
+        handleCancelClick(event, order, dispatch, updateOrder, orders, setOrders);
+    };
 
     useEffect(() => {
         if (user && user._id) {
@@ -62,156 +212,8 @@ const OrderHistory = () => {
         return () => clearInterval(intervalId); // Clear interval on component unmount
     }, [user]);
 
-    const generatePDF = (order) => {
-        const element = document.createElement('div');
-
-        let orderItemsTable = `
-            <table border="1" cellspacing="0" cellpadding="5">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Quantity</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        let subtotal = 0;
-        order.order_items.forEach(item => {
-            subtotal += item.subtotal;
-            orderItemsTable += `
-                <tr>
-                    <td><img src="${item.image_url}" alt="${item.name}" width="50"></td>
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>$${item.subtotal.toFixed(2)}</td>
-                </tr>
-            `;
-        });
-
-        const discount = order.discount || 0;
-        const tax = calculateTaxForOrder(order);
-        const totalPrice = subtotal - discount + tax;
-
-        orderItemsTable += `
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" align="right">Subtotal:</td>
-                    <td>$${subtotal.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" align="right">Discount:</td>
-                    <td>-$${discount.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" align="right">Tax:</td>
-                    <td>$${tax.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td colspan="3" align="right"><strong>Total Price:</strong></td>
-                    <td><strong>$${totalPrice.toFixed(2)}</strong></td>
-                </tr>
-            </tfoot>
-        </table>
-        `;
-
-        element.innerHTML = `
-            <h2 style="color: #FF5733; text-shadow: 2px 2px #33FF57;">Hunger Express</h2>
-            <h3>Invoice for Order: ${order._id}</h3>
-            <p>Date: ${new Date(order.order_date).toLocaleString()}</p>
-            <p>Status: ${order.order_status}</p>
-            <p>Delivery Address: ${order.delivery_address}</p>
-            ${orderItemsTable}
-        `;
-        const opt = {
-            margin: 10,
-            filename: `Invoice_${order._id}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().from(element).set(opt).save();
-    }
 
 
-    const handleCancelClick = async (event, order) => {
-        event.stopPropagation();
-
-        const { _id: orderId, order_date } = order;
-
-        if (!orderId) {
-            console.error('Order ID is undefined. Cannot proceed with the update.');
-            alert('Error: Unable to cancel the order due to missing order ID.');
-            return;
-        }
-
-        // Calculate the time difference in minutes
-        const timeDiff = (new Date().getTime() - new Date(order_date).getTime()) / 60000; // Convert milliseconds to minutes
-
-        let refundPercentage;
-        if (timeDiff < 1) {
-            refundPercentage = 90;
-        } else if (timeDiff < 2) {
-            refundPercentage = 80;
-        } else if (timeDiff < 3) {
-            refundPercentage = 70;
-        } else if (timeDiff < 4) {
-            refundPercentage = 60;
-        } else if (timeDiff < 5) {
-            refundPercentage = 50;
-        } else if (timeDiff < 6) {
-            refundPercentage = 40;
-        } else if (timeDiff < 7) {
-            refundPercentage = 30;
-        } else if (timeDiff < 8) {
-            refundPercentage = 20;
-        } else if (timeDiff < 9) {
-            refundPercentage = 10;
-        } else {
-            refundPercentage = 0; // No refund if more than 10 minutes
-        }
-
-        const refundAmount = (order.total_price * refundPercentage) / 100;
-
-        // Confirm cancellation and refund with the user
-        const confirmCancel = window.confirm(`Are you sure you want to cancel this order? You will receive a ${refundPercentage}% refund, amounting to $${refundAmount.toFixed(2)}.`);
-        if (!confirmCancel) {
-            return; // Stop if user does not confirm
-        }
-
-        try {
-            const updatedOrderData = {
-                orderId,
-                orderData: { order_status: 'Canceled' }
-            };
-            await dispatch(updateOrder(updatedOrderData));
-
-            // Update local state to reflect the change
-            const updatedOrders = orders.map(o =>
-                o._id === orderId ? { ...o, order_status: 'Canceled' } : o
-            );
-            setOrders(updatedOrders);
-
-            // Update the alert message to include refund details
-            alert(`Order has been successfully canceled. You will receive a ${refundPercentage}% refund, amounting to $${refundAmount.toFixed(2)}.`);
-
-        } catch (error) {
-            console.error('Failed to cancel the order:', error);
-            alert('Error: Failed to cancel the order. Please try again.');
-        }
-    };
-
-
-
-    const calculateTaxForOrder = (order) => {
-        const subtotal = order.order_items.reduce((acc, item) => acc + item.subtotal, 0);
-        const discountedSubtotal = Math.max(subtotal - (order.discount || 0), 0); // Ensure subtotal doesn't go below zero
-        const taxRate = 0.1; // Assuming 10% tax rate, adjust as needed
-        return discountedSubtotal * taxRate;
-    };
 
     const calculateTotalPriceForOrder = (order) => {
         const subtotal = order.order_items.reduce((acc, item) => acc + item.subtotal, 0);
@@ -273,7 +275,7 @@ const OrderHistory = () => {
                                                 variant="contained"
                                                 color="secondary"
                                                 disabled={isOrderOlderThan30Mins(order.order_date) || order.order_status === 'Canceled'}
-                                                onClick={(event) => handleCancelClick(event, order)}
+                                                onClick={(event) => onHandleCancelClick(event, order)} // Ensure this calls onHandleCancelClick
                                             >
                                                 {order.order_status === 'Canceled' ? 'Cancelled' : 'Cancel'}
                                             </Button>

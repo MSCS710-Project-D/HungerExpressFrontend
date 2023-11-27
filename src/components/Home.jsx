@@ -15,6 +15,10 @@ const Home = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [isChatBotVisible, setIsChatBotVisible] = useState(false); // State to control chatbot visibility
 
+    // Function to toggle chatbot visibility
+    const toggleChatBot = () => {
+        setIsChatBotVisible(prev => !prev);
+    };
 
     useEffect(() => {
         const orderString = localStorage.getItem('order');
@@ -70,7 +74,7 @@ const Home = () => {
             )}
             {/* Chatbot Trigger Button */}
             <button
-                onClick={() => setIsChatBotVisible(true)}
+                onClick={toggleChatBot}
                 style={{
                     position: 'fixed',
                     bottom: '20px',
@@ -86,7 +90,12 @@ const Home = () => {
             >
                 Chat with Us
             </button>
+
             {/* Chatbot Component */}
+            <ChatBot
+                open={isChatBotVisible}
+                onClose={toggleChatBot}
+            />
             {isChatBotVisible && (
                 <ChatBot
                     open={isChatBotVisible}
