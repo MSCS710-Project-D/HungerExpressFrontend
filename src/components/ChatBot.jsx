@@ -9,9 +9,29 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import axios from 'axios';
+
+const API_URL = "https://us-central1-maristhungerexpress.cloudfunctions.net/api";
 
 const ChatBot = ({ open, onClose }) => {
+    const user = useSelector(state => state.auth.user);
     const [message, setMessage] = useState('');
+    const [activeUser, setActiveUser] = useState(null);
+
+    useEffect(() => {
+        if (window?.channel) {
+            if (user?.user_type === 'admin') {
+                window?.channel.bind('admin', (data) => {
+                    setActiveUser(data.message.sender);
+                    setConversation(conversation => [...conversation, { text: data.message.content, sender: 'bot' }]);
+                })
+            } else {
+                window?.channel.bind(user._id, (data) => {
+                    setConversation(conversation => [...conversation, { text: data.message.content, sender: 'bot' }]);
+                })
+            }
+        }
+    }, [window?.channel])
     
     const [hasUserReplied, setHasUserReplied] = useState(false);
     const [conversation, setConversation] = useState(() => {
@@ -25,7 +45,7 @@ const ChatBot = ({ open, onClose }) => {
      useEffect(() => {
         localStorage.setItem('chatbotConversation', JSON.stringify(conversation));
     }, [conversation]);
-    
+
     const isNegativeResponse = (message) => {
         const negativeWords = ['no', 'not', 'none', 'nothing', 'nope', 'don’t', 'dont', 'do not', 'never'];
         return negativeWords.some(word => message.toLowerCase().includes(word));
@@ -92,9 +112,6 @@ const ChatBot = ({ open, onClose }) => {
             { text: 'Profile', action: () => handleIntentClick('Profile') }];
         setConversation(conversation => [...conversation, { type: 'intents', intents }]);
     };
-
-
-    const user = useSelector(state => state.auth.user);
 
     const dispatch = useDispatch();
     const [localOrders, setLocalOrders] = useState([]);
@@ -261,40 +278,71 @@ const ChatBot = ({ open, onClose }) => {
         ));
     };
 
+    const [liveagent, setLiveagent] = useState(user?.user_type === 'admin' ? true : false);
+
 
     const handleSend = async () => {
-        if (message.trim()) {
-            const newMessage = { text: message, sender: 'user', timestamp: new Date().toISOString() };
-            setConversation([...conversation, newMessage]);
-            setMessage('');
+        if (!liveagent && user?.user_type !== 'admin') {
+            if (message.trim()) {
+                const newMessage = { text: message, sender: 'user', timestamp: new Date().toISOString() };
+                setConversation([...conversation, newMessage]);
+                setMessage('');
+    
+                // Check if the last bot message was about speaking with a live agent
+                const lastBotMessage = conversation.length > 0 && conversation[conversation.length - 1];
+                // Check if it's the first user message and if it's negative
+            if (conversation.length === 1 && isNegativeResponse(message)) {
+                setConversation(conversation => [...conversation, { text: "Thank you for contacting us. If you need any assistance in the future, feel free to reach out. Have a great day!", sender: 'bot' }]);
+            } else 
+                if (lastBotMessage && lastBotMessage.sender === 'bot' && lastBotMessage.text.includes('Would you like to speak with a live agent?')) {
+                    if (isAffirmativeResponse(message)) {
+                        setConversation(conversation => [...conversation, { text: "Connecting to a live agent, please wait...", sender: 'bot' }]);
+                        
+                        const resp  =await axios.post(`${API_URL}/messages/create`, {
+                            sender: user?._id,
+                            content: 'Would you like to speak with a live agent?',
+                            timestamp: new Date().toISOString(),
+                            role: user?.user_type
+                        })
 
-            // Check if the last bot message was about speaking with a live agent
-            const lastBotMessage = conversation.length > 0 && conversation[conversation.length - 1];
-            // Check if it's the first user message and if it's negative
-        if (conversation.length === 1 && isNegativeResponse(message)) {
-            setConversation(conversation => [...conversation, { text: "Thank you for contacting us. If you need any assistance in the future, feel free to reach out. Have a great day!", sender: 'bot' }]);
-        } else 
-            if (lastBotMessage && lastBotMessage.sender === 'bot' && lastBotMessage.text.includes('Would you like to speak with a live agent?')) {
-                if (isAffirmativeResponse(message)) {
-                    setConversation(conversation => [...conversation, { text: "Connecting to a live agent, please wait...", sender: 'bot' }]);
-                    // Here you can add logic to actually connect to a live agent
-                } else {
-                    // Handle non-affirmative response
-                    setConversation(conversation => [...conversation, { text: "Okay, let me know if there's anything else I can help with.", sender: 'bot' }]);
-                }
-            } else {
-                try {
-                    const response = await handleIntent(message);
-                    setConversation(conversation => [...conversation, { text: response, sender: 'bot' }]);
-                    if (!hasUserReplied) {
-                        addIntentsToConversation(); // Add intents only after the first user message
-                        setHasUserReplied(true); // Update state to indicate the user has replied
+                        setLiveagent(true);
+    
+                        console.log('resp', resp.data);
+                    } else {
+                        // Handle non-affirmative response
+                        setConversation(conversation => [...conversation, { text: "Okay, let me know if there's anything else I can help with.", sender: 'bot' }]);
                     }
-                } catch (error) {
-                    console.error('Error processing message:', error);
-                    setConversation(conversation => [...conversation, { text: "Sorry, I couldn't process your request.", sender: 'bot' }]);
+                } else {
+                    try {
+                        const response = await handleIntent(message);
+                        setConversation(conversation => [...conversation, { text: response, sender: 'bot' }]);
+                        if (!hasUserReplied) {
+                            addIntentsToConversation(); // Add intents only after the first user message
+                            setHasUserReplied(true); // Update state to indicate the user has replied
+                        }
+                    } catch (error) {
+                        console.error('Error processing message:', error);
+                        setConversation(conversation => [...conversation, { text: "Sorry, I couldn't process your request.", sender: 'bot' }]);
+                    }
                 }
             }
+        } else {
+            setConversation(conversation => [...conversation, { text: message.trim(), sender: 'user' }]);
+            
+            const config = {
+                sender: user?._id,
+                content: message.trim(),
+                timestamp: new Date().toISOString(),
+                role: user?.user_type
+            }
+
+            if (user?.user_type === 'admin') {
+                config.receiver = activeUser
+            }
+
+            const resp  =await axios.post(`${API_URL}/messages/create`, config)
+
+            console.log('resp', resp.data);
         }
     };
 

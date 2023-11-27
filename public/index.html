@@ -26,7 +26,20 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script src="https://www.paypal.com/sdk/js?client-id=ASrSLj_-Qlzejs9Zdj54B5pSuAiXkFyu1qX7tmz0jPDo9owC3HOAa5uSXMprQ_kJPxRUEdHbzcru5Ng2"></script>
+  
+    <script>
+
+      // Enable pusher logging - don't include this in production
+      Pusher.logToConsole = true;
+  
+      var pusher = new Pusher('5afd7e1b61fe0c4e7af3', {
+        cluster: 'us2'
+      });
+  
+      window.channel = pusher.subscribe('chatbot');
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
