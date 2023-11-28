@@ -17,6 +17,8 @@ const ChatBot = ({ open, onClose }) => {
     const user = useSelector(state => state.auth.user);
     const [message, setMessage] = useState('');
     const [activeUser, setActiveUser] = useState(null);
+    const uniqueMessages = new Set(); // Set to keep track of unique messages
+
 
     useEffect(() => {
         if (window?.channel) {
@@ -53,6 +55,12 @@ const ChatBot = ({ open, onClose }) => {
     
 
     const renderMessage = (msg, index) => {
+        if (uniqueMessages.has(msg.text)) {
+            return null; // Skip rendering if it's a duplicate
+        }
+
+        uniqueMessages.add(msg.text);
+        
         if (msg.type === 'intents') {
             return (
                 <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', margin: '5px 0' }}>
