@@ -289,7 +289,13 @@ const ChatBot = ({ open, onClose }) => {
     const [liveagent, setLiveagent] = useState(user?.user_type === 'admin' ? true : false);
 
 
+   
+
     const handleSend = async () => {
+        if (message.trim() === '') {
+            return; 
+        }
+        
         if (!liveagent && user?.user_type !== 'admin') {
             if (message.trim()) {
                 const newMessage = { text: message, sender: 'user', timestamp: new Date().toISOString() };
