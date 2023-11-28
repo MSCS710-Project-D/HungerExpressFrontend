@@ -344,6 +344,7 @@ const ChatBot = ({ open, onClose }) => {
 
             console.log('resp', resp.data);
         }
+        setMessage(''); // Clear the message input field after sending
     };
 
     if (!open) return null;

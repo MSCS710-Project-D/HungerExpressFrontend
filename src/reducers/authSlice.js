@@ -42,6 +42,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+      // Clear chatbot conversation from local storage
+      localStorage.removeItem('chatbotConversation');
     },
     clearError: (state) => {
       state.error = null;
