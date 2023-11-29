@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Typography, RadioGroup, FormControlLabel, Radio, Button, Grid } from '@mui/material';
+import { Modal, Box, Typography, RadioGroup, FormControlLabel, Radio, Button, Grid, Paper } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 
@@ -8,11 +8,29 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: 600,
     bgcolor: 'background.paper',
     boxShadow: 24,
     p: 4,
     borderRadius: 2,
+};
+
+const gridItemStyle = {
+    padding: '20px',
+    textAlign: 'center',
+    color: 'theme.palette.text.secondary',
+    borderRadius: '8px',
+    boxShadow: '0 3px 10px rgb(0 0 0 / 0.2)',
+    height: '300px', // Fixed height for each grid item
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between'
+};
+
+const descriptionStyle = {
+    overflowY: 'auto', // Scroll for overflow
+    maxHeight: '100px', // Maximum height before scrolling
+    marginBottom: '10px'
 };
 
 const calorieRanges = [
@@ -28,6 +46,7 @@ const FoodSuggestionModal = ({ open, handleClose }) => {
     const [selectedAllergy, setSelectedAllergy] = useState('none'); // Default to 'none'
     const [selectedCalorieRange, setSelectedCalorieRange] = useState('0 - 500'); // Default to first range
     const [suggestedItems, setSuggestedItems] = useState([]);
+    const [expandedItemId, setExpandedItemId] = useState(null);
 
     useEffect(() => {
         const fetchMenuItems = async () => {
@@ -81,40 +100,72 @@ const FoodSuggestionModal = ({ open, handleClose }) => {
     
         console.log("Filtered Items:", filteredItems); // Check filtered items
         setSuggestedItems(filteredItems);
-        setStep(4); // Move to the final step to show suggestions
+        setStep(3); // Move to the final step to show suggestions
     };
     
 
     const renderAllergyOptions = () => (
-        <RadioGroup value={selectedAllergy} onChange={(e) => setSelectedAllergy(e.target.value)}>
-            {allergyOptions.map(allergy => (
-                <FormControlLabel key={allergy} value={allergy} control={<Radio />} label={allergy} />
-            ))}
-        </RadioGroup>
+        <div>
+            <Typography variant="subtitle1" gutterBottom>
+                Are you allergic to any of the ingredients?
+            </Typography>
+            <RadioGroup value={selectedAllergy} onChange={(e) => setSelectedAllergy(e.target.value)}>
+                {allergyOptions.map(allergy => (
+                    <FormControlLabel key={allergy} value={allergy} control={<Radio />} label={allergy} />
+                ))}
+            </RadioGroup>
+        </div>
     );
+    
 
     const renderCalorieRangeOptions = () => (
-        <RadioGroup value={selectedCalorieRange} onChange={(e) => setSelectedCalorieRange(e.target.value)}>
-            {calorieRanges.map(range => (
-                <FormControlLabel key={range.label} value={range.label} control={<Radio />} label={range.label} />
-            ))}
-        </RadioGroup>
+        <div>
+            <Typography variant="subtitle1" gutterBottom>
+                What calorie range would you like to have?
+            </Typography>
+            <RadioGroup value={selectedCalorieRange} onChange={(e) => setSelectedCalorieRange(e.target.value)}>
+                {calorieRanges.map(range => (
+                    <FormControlLabel key={range.label} value={range.label} control={<Radio />} label={range.label} />
+                ))}
+            </RadioGroup>
+        </div>
     );
+    const toggleItemExpansion = (itemId) => {
+        setExpandedItemId(expandedItemId === itemId ? null : itemId);
+    };
 
-    const renderSuggestedItems = () => (
-        <Grid container spacing={2}>
-            {suggestedItems.length > 0 ? suggestedItems.map(item => (
-                <Grid item xs={12} sm={6} md={4} key={item._id}>
-                    <div>
-                        <img src={item.image_url} alt={item.name} style={{ width: '100%', height: 'auto' }} />
-                        <Typography variant="h6">{item.name}</Typography>
-                        <Typography>{item.description}</Typography>
-                        <Typography>${item.price}</Typography>
-                    </div>
-                </Grid>
-            )) : <Typography>No items match your criteria.</Typography>}
-        </Grid>
-    );
+    const renderSuggestedItems = () => {
+        if (suggestedItems.length === 0) {
+            return (
+                <Typography variant="subtitle1" style={{ marginTop: '20px', textAlign: 'center' }}>
+                    No items match your criteria.
+                </Typography>
+            );
+        }
+    
+        return (
+            <Grid container spacing={3}>
+                {suggestedItems.map(item => (
+                    <Grid item xs={12} sm={6} md={4} key={item._id}>
+                        <Paper style={gridItemStyle}>
+                            <Typography variant="h6" gutterBottom>{item.name}</Typography>
+                            <div style={descriptionStyle}>
+                                {item.description}
+                            </div>
+                            <div>
+                                <Typography variant="body2" color="textSecondary">${item.price}</Typography>
+                                <Typography variant="body2" color="textSecondary">Calories: {item.calories}</Typography>
+                                {item.allergy_info && item.allergy_info.length > 0 && (
+                                    <Typography variant="body2" color="error">Allergens: {item.allergy_info.join(', ')}</Typography>
+                                )}
+                            </div>
+                        </Paper>
+                    </Grid>
+                ))}
+            </Grid>
+        );
+    };
+    
 
     const renderStepContent = () => {
         switch (step) {
