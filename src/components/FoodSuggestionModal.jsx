@@ -89,12 +89,13 @@ const FoodSuggestionModal = ({ open, handleClose }) => {
         console.log("Selected Range:", range); // Check selected range
     
         const filteredItems = menuItems.filter(item => {
-            const allergyMatch = selectedAllergy === 'none' || (item.allergy_info && !item.allergy_info.includes(selectedAllergy));
+            const hasAllergen = item.allergy_info && item.allergy_info.some(allergen => allergen.toLowerCase().includes(selectedAllergy.toLowerCase()));
+            const allergyMatch = selectedAllergy === 'none' || !hasAllergen;
             const calories = parseInt(item.calories);
             const calorieMatch = calories >= range.min && calories <= range.max;
-    
+        
             console.log("Item:", item.name, "Allergy Match:", allergyMatch, "Calorie Match:", calorieMatch); // Check each item
-    
+        
             return allergyMatch && calorieMatch;
         });
     
