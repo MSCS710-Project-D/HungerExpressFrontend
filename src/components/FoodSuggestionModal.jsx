@@ -58,7 +58,7 @@ const FoodSuggestionModal = ({ open, handleClose }) => {
     };
 
     const handleNextStep = () => {
-        if (step < 3) {
+        if (step < 2) {
             setStep(step + 1);
         } else {
             suggestMenuItems();
