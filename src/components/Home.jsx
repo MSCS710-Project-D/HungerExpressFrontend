@@ -6,6 +6,7 @@ import ImagePanel from './ImagePanel';
 import MenuModal from './MenuModal';
 import { fetchMenuItems } from '../actions/menuItems.js';
 import ChatBot from '../components/ChatBot'; // Import the ChatBot component
+import FoodSuggestionModal from '../components/FoodSuggestionModal'; // Use .js if the file is a JavaScript file
 
 
 const Home = () => {
@@ -14,10 +15,23 @@ const Home = () => {
     const [isMenuModalVisible, setIsMenuModalVisible] = useState(false);
     const [menuItems, setMenuItems] = useState([]);
     const [isChatBotVisible, setIsChatBotVisible] = useState(false); // State to control chatbot visibility
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Function to toggle chatbot visibility
     const toggleChatBot = () => {
         setIsChatBotVisible(prev => !prev);
+    };
+
+    useEffect(() => {
+        // Assuming you have a way to check if the user has just logged in
+        const userJustLoggedIn = true; // Replace with actual logic
+        if (userJustLoggedIn) {
+            setIsModalOpen(true);
+        }
+    }, []);
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
     };
 
     useEffect(() => {
@@ -92,16 +106,15 @@ const Home = () => {
             </button>
 
             {/* Chatbot Component */}
-            <ChatBot
-                open={isChatBotVisible}
-                onClose={toggleChatBot}
-            />
             {isChatBotVisible && (
                 <ChatBot
                     open={isChatBotVisible}
-                    onClose={() => setIsChatBotVisible(false)}
+                    onClose={toggleChatBot}
                 />
             )}
+
+            {/* Food Suggestion Modal */}
+            <FoodSuggestionModal open={isModalOpen} handleClose={handleCloseModal} />
         </div>
     );
 }
