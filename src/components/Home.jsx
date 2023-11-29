@@ -1,5 +1,6 @@
 // Home.jsx
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux'; // Import useSelector from react-redux
 import { fetchRestaurants } from '../actions/restaurantActions';
 import RestaurantPane from './RestaurantPane';
 import ImagePanel from './ImagePanel';
@@ -7,7 +8,6 @@ import MenuModal from './MenuModal';
 import { fetchMenuItems } from '../actions/menuItems.js';
 import ChatBot from '../components/ChatBot'; // Import the ChatBot component
 import FoodSuggestionModal from '../components/FoodSuggestionModal'; // Use .js if the file is a JavaScript file
-
 
 const Home = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -17,9 +17,12 @@ const Home = () => {
     const [isChatBotVisible, setIsChatBotVisible] = useState(false); // State to control chatbot visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // Use useSelector to access the user from the Redux store
+    const user = useSelector((state) => state.auth.user);
+
     // Function to toggle chatbot visibility
     const toggleChatBot = () => {
-        setIsChatBotVisible(prev => !prev);
+        setIsChatBotVisible((prev) => !prev);
     };
 
     useEffect(() => {
@@ -67,11 +70,14 @@ const Home = () => {
         setIsMenuModalVisible(true);
     };
 
+    // Check if the user is an admin before rendering the Food Suggestion Modal
+    const isAdmin = user?.user_type === 'admin';
+
     return (
         <div>
             <ImagePanel />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '55px' }} className="restaurant-grid">
-                {restaurants.map(restaurant => (
+                {restaurants.map((restaurant) => (
                     <RestaurantPane
                         key={restaurant._id}
                         restaurant={restaurant}
@@ -99,24 +105,19 @@ const Home = () => {
                     color: 'white',
                     border: 'none',
                     borderRadius: '5px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                 }}
             >
                 Chat with Us
             </button>
 
             {/* Chatbot Component */}
-            {isChatBotVisible && (
-                <ChatBot
-                    open={isChatBotVisible}
-                    onClose={toggleChatBot}
-                />
-            )}
+            {isChatBotVisible && <ChatBot open={isChatBotVisible} onClose={toggleChatBot} />}
 
-            {/* Food Suggestion Modal */}
-            <FoodSuggestionModal open={isModalOpen} handleClose={handleCloseModal} />
+            {/* Food Suggestion Modal - Render only if the user is not an admin */}
+            {!isAdmin && <FoodSuggestionModal open={isModalOpen} handleClose={handleCloseModal} />}
         </div>
     );
-}
+};
 
 export default Home;
